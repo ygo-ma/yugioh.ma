@@ -16,7 +16,7 @@
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.1",
     "hono": "^4.7.6",
-    "nitro": "^3.0.0-beta",
+    "nitro": "^3.0.260311-beta",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "typescript": "^5.8.3",
