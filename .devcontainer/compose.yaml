@@ -1,0 +1,10 @@
+name: "ygoma"
+
+services:
+  dev:
+    hostname: container
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace

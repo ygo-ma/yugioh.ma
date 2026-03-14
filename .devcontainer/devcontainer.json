@@ -1,0 +1,21 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "name": "ygoma",
+  "dockerComposeFile": ["compose.yaml"],
+  "remoteUser": "dev",
+  "containerUser": "dev",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ryanluker.vscode-coverage-gutters",
+        "tamasfe.even-better-toml",
+        "vitest.explorer",
+        "vunguyentuan.vscode-postcss"
+      ]
+    }
+  }
+}
