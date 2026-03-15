@@ -8,14 +8,8 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [
-    tanstackStart({
-      srcDirectory: "src",
-    }),
+    tanstackStart({ srcDirectory: "src" }),
     viteReact(),
-    nitro({
-      config: {
-        scanDirs: ["server"],
-      },
-    }),
+    nitro({ serverDir: "./server" }),
   ],
 });
