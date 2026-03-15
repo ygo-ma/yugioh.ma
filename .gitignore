@@ -25,6 +25,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # caches
 .eslintcache
 .cache
+.turbo
+.vite
 *.tsbuildinfo
 
 # vinxi / tanstack / nitro
@@ -32,7 +34,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .output
 .nitro
 .tanstack
-.vite
 routeTree.gen.ts
 
 # database

@@ -8,3 +8,5 @@ services:
       dockerfile: .devcontainer/Dockerfile
     volumes:
       - ..:/workspace
+    environment:
+      TURBO_TELEMETRY_DISABLED: "1"
