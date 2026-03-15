@@ -1,12 +1,9 @@
 name: Setup
-description: Checkout, set up Bun, and install dependencies
+description: Set up Bun and install dependencies
 
 runs:
   using: composite
   steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
