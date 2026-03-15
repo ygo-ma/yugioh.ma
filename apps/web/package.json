@@ -1,21 +1,21 @@
 {
   "name": "@ygoma/web",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
-    "lint": "tsc -b"
+    "lint": "oxfmt --check && tsc -b"
   },
   "devDependencies": {
     "@tanstack/react-router": "catalog:",
-    "@ygoma/tsconfig": "workspace:*",
     "@tanstack/react-start": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@ygoma/api": "workspace:*",
+    "@ygoma/tsconfig": "workspace:*",
     "nitro": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

@@ -1,0 +1,6 @@
+# build output
+.nitro
+.output
+.tanstack
+.vite
+.vinxi

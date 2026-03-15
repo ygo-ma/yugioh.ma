@@ -1,17 +1,24 @@
 {
   "name": "@ygoma/workspace",
-  "type": "module",
   "private": true,
-  "packageManager": "bun@1.3.10",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
+  "type": "module",
   "scripts": {
-    "lint": "turbo lint",
+    "prepare": "husky",
+    "format": "oxfmt",
+    "lint": "oxfmt --check *.* && turbo lint",
     "build": "turbo build",
     "dev": "turbo dev"
   },
+  "devDependencies": {
+    "husky": "catalog:",
+    "oxfmt": "catalog:",
+    "turbo": "catalog:"
+  },
+  "packageManager": "bun@1.3.11",
   "catalog": {
     "@tanstack/react-router": "1.167.0",
     "@tanstack/react-start": "1.166.11",
@@ -25,11 +32,10 @@
     "nitro": "3.0.260311-beta",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "husky": "9.1.7",
+    "oxfmt": "0.40.0",
     "turbo": "2.8.17",
     "typescript": "5.9.3",
     "vite": "8.0.0"
-  },
-  "devDependencies": {
-    "turbo": "catalog:"
   }
 }

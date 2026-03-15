@@ -1,16 +1,22 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "packages/tsconfig/**/*"
-  ],
+  "globalDependencies": ["packages/tsconfig/tsconfig.*.json"],
   "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "lint": {
       "dependsOn": ["^build"],
       "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "tsconfig.json",
-        "tsconfig.*.json"
+        "src/**/*.{ts,tsx}",
+        "*.json",
+        ".gitignore",
+        "$TURBO_ROOT$/.gitignore",
+        "$TURBO_ROOT$/package.json",
+        "$TURBO_ROOT$/.oxfmtrc.json"
       ]
     },
     "build": {
@@ -22,13 +28,12 @@
         "!src/**/*.test.{ts,tsx}",
         "vite.config.ts",
         "tsconfig.json",
-        "tsconfig.*.json"
+        "tsconfig.*.json",
+        ".gitignore",
+        "$TURBO_ROOT$/.gitignore",
+        "$TURBO_ROOT$/package.json"
       ],
       "outputs": [".output/**", "dist/**"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
     }
   }
 }

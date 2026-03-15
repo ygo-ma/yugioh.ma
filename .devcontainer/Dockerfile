@@ -1,4 +1,4 @@
-FROM oven/bun:debian
+FROM oven/bun:canary-debian
 
 # Install basic dev tools and setup locale
 RUN apt-get update \

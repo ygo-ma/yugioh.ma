@@ -1,46 +1,13 @@
-# dependencies (bun install)
 node_modules
-
-# output
-out
-dist
-*.tgz
-
-# code coverage
-coverage
-*.lcov
-
-# logs
-logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
-
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# caches
-.eslintcache
-.cache
 .turbo
-.vite
-*.tsbuildinfo
 
-# vinxi / tanstack / nitro
-.vinxi
-.output
-.nitro
-.tanstack
-routeTree.gen.ts
+# env
+.env
+.env.*.local
 
-# database
+# runtime files
+run/
 *.db
 
-# IntelliJ based IDEs
-.idea
-
-# Finder (MacOS) folder config
+# OS
 .DS_Store

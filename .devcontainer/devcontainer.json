@@ -11,13 +11,23 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "oxc.oxc-vscode",
         "ryanluker.vscode-coverage-gutters",
         "tamasfe.even-better-toml",
         "vitest.explorer",
         "vunguyentuan.vscode-postcss"
       ],
       "settings": {
-        "search.useIgnoreFiles": true
+        "editor.defaultFormatter": "oxc.oxc-vscode",
+        "editor.formatOnSave": true,
+        "editor.rulers": [80],
+        "search.useIgnoreFiles": true,
+        "json.schemas": [{
+            "fileMatch": ["bun.lock"],
+            "schema": {
+                "allowTrailingCommas": true
+            }
+        }]
       }
     }
   }
