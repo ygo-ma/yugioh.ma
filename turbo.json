@@ -8,7 +8,6 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.{ts,tsx}",
@@ -16,7 +15,8 @@
         ".gitignore",
         "$TURBO_ROOT$/.gitignore",
         "$TURBO_ROOT$/package.json",
-        "$TURBO_ROOT$/.oxfmtrc.json"
+        "$TURBO_ROOT$/.oxfmtrc.json",
+        "$TURBO_ROOT$/.oxlintrc.json"
       ]
     },
     "build": {

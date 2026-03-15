@@ -1,5 +1,9 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"],
   "printWidth": 80,
-  "ignorePatterns": ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"]
+  "trailingComma": "none",
+  "overrides": [
+    { "files": ["**/*.{ts,tsx}"], "options": { "trailingComma": "all" } }
+  ]
 }

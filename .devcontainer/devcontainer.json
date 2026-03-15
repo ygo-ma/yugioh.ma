@@ -19,15 +19,18 @@
       ],
       "settings": {
         "editor.defaultFormatter": "oxc.oxc-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.oxc": "explicit"
+        },
         "editor.formatOnSave": true,
         "editor.rulers": [80],
         "search.useIgnoreFiles": true,
-        "json.schemas": [{
+        "json.schemas": [
+          {
             "fileMatch": ["bun.lock"],
-            "schema": {
-                "allowTrailingCommas": true
-            }
-        }]
+            "schema": { "allowTrailingCommas": true }
+          }
+        ]
       }
     }
   }
