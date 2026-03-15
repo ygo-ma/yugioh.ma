@@ -1,0 +1,31 @@
+name: Setup
+description: Checkout, set up Bun, and install dependencies
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: canary
+
+    - name: Cache Bun packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+        restore-keys: ${{ runner.os }}-bun-
+
+    - name: Cache turbo
+      uses: actions/cache@v5
+      with:
+        path: .turbo/
+        key: ${{ runner.os }}-turbo-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-turbo-
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
