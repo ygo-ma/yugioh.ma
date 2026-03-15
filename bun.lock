@@ -13,6 +13,7 @@
     },
     "apps/api": {
       "name": "@ygoma/api",
+      "version": "0.1.0",
       "dependencies": {
         "drizzle-orm": "catalog:",
         "hono": "catalog:",
@@ -25,9 +26,11 @@
     },
     "apps/web": {
       "name": "@ygoma/web",
+      "version": "0.1.0",
       "devDependencies": {
         "@tanstack/react-router": "catalog:",
         "@tanstack/react-start": "catalog:",
+        "@types/bun": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",

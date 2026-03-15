@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  TURBO_TELEMETRY_DISABLED: "1"
+
 jobs:
   lint:
     name: Lint
@@ -18,4 +21,4 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: bun run lint
+        run: which node && rm $(which node) && bun oxfmt --version && bun run lint
