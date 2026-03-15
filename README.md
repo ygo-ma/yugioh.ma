@@ -1,15 +1,23 @@
-# /workspace
+# Ygoma
 
-To install dependencies:
+Yu-Gi-Oh platform for tournaments, decks, collections, trading, and blog content.
 
-```bash
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh) v1.3+
+
+### Install
+
+```sh
 bun install
 ```
 
-To run:
+### Development
 
-```bash
-bun run index.ts
+```sh
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.3.10. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+The web app runs at `http://localhost:3000` with the API proxied at `/api/*`.
