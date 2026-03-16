@@ -2,13 +2,12 @@ FROM node:24
 
 # Install basic dev tools and setup locale
 RUN apt update -y \
-    && apt upgrade -y \
-    && apt install -y \
-        sudo curl ca-certificates locales lsb-release build-essential git \
+    && apt install -y sudo curl locales build-essential git \
     && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
     && locale-gen \
     && rm -rf /var/lib/apt/lists/*
 
+# Enable corepack to manage package managers like pnpm
 RUN corepack enable
 
 # Create the dev user and have him sudo without password
