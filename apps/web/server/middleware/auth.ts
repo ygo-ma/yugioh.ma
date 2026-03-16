@@ -22,7 +22,7 @@ export default defineEventHandler((event) => {
   }
 
   event.res.status = 401;
-  event.res.headers.set("WWW-Authenticate", 'Basic realm="Preview"');
+  event.res.headers.set("WWW-Authenticate", 'Basic realm="Protected"');
 
   return "Unauthorized";
 });
