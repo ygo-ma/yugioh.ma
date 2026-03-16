@@ -1,6 +1,8 @@
 # build output
+.wrangler
 .nitro
 .output
 .tanstack
 .vite
 .vinxi
+dist
