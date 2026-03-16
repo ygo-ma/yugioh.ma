@@ -1,4 +1,0 @@
-{
-  "extends": "@ygoma/tsconfig/tsconfig.bun.json",
-  "include": ["server", "vite.config.ts"]
-}

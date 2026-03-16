@@ -1,16 +1,19 @@
-FROM oven/bun:canary-debian
+FROM node:24
 
 # Install basic dev tools and setup locale
-RUN apt-get update \
-    && apt-get install -y sudo curl ca-certificates locales lsb-release \
-        build-essential git \
+RUN apt update -y \
+    && apt upgrade -y \
+    && apt install -y \
+        sudo curl ca-certificates locales lsb-release build-essential git \
     && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
     && locale-gen \
     && rm -rf /var/lib/apt/lists/*
 
+RUN corepack enable
+
 # Create the dev user and have him sudo without password
 ENV USER=dev
-RUN userdel bun \
+RUN userdel node \
     && useradd -mG sudo -s /bin/bash $USER \
     && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
@@ -22,6 +25,10 @@ USER $USER
 
 # Remove sudo note on login
 RUN touch /home/$USER/.sudo_as_admin_successful
+
+# Enable corepack and pre-install pnpm
+COPY package.json /tmp/package.json
+RUN cd /tmp && corepack install
 
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer
