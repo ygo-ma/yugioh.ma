@@ -1,4 +1,4 @@
-name: CI
+name: Checks & Preview
 
 on:
   pull_request:
@@ -10,22 +10,8 @@ env:
   TURBO_TELEMETRY_DISABLED: "1"
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup
-        uses: ./.github/actions/setup
-
-      - name: Lint
-        run: pnpm lint
-
-  deploy:
-    name: Deploy Preview
-    needs: lint
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     environment: staging
     permissions:
@@ -38,8 +24,12 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Lint
+        run: pnpm lint
+
       - name: Build
         run: pnpm build:preview
+        working-directory: apps/web
 
       - name: Deploy
         id: deploy
@@ -47,7 +37,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/web/dist --project-name=ygoma-staging
+          command: pages deploy dist --project-name=ygoma-staging --branch=${{ github.head_ref || github.ref_name }}
+          workingDirectory: apps/web
 
       - name: Comment preview URL
         if: github.event_name == 'pull_request'
@@ -55,6 +46,4 @@ jobs:
         with:
           header: preview-deployment
           message: |
-            **Preview deployment**
-
-            ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+            **Preview deployment:** ${{ steps.deploy.outputs.pages-deployment-alias-url }}

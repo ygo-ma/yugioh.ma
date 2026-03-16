@@ -37,23 +37,6 @@
         "$TURBO_ROOT$/package.json"
       ],
       "outputs": [".output/**"]
-    },
-    "build:preview": {
-      "dependsOn": ["^build"],
-      "outputLogs": "errors-only",
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        "src/**/*.{ts,tsx}",
-        "!src/**/*.test.{ts,tsx}",
-        "server/**/*.ts",
-        "vite.config.ts",
-        "tsconfig.json",
-        "tsconfig.*.json",
-        ".gitignore",
-        "$TURBO_ROOT$/.gitignore",
-        "$TURBO_ROOT$/package.json"
-      ],
-      "outputs": ["dist/**"]
     }
   }
 }
