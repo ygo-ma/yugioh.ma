@@ -19,6 +19,7 @@ RUN userdel node \
 
 # Pre-create a workspace directory with the correct permissions
 RUN mkdir /workspace && chown $USER:$USER /workspace
+WORKDIR /workspace
 
 # Switch to default user
 USER $USER
@@ -27,8 +28,8 @@ USER $USER
 RUN touch /home/$USER/.sudo_as_admin_successful
 
 # Enable corepack and pre-install pnpm
-COPY package.json /tmp/package.json
-RUN cd /tmp && corepack install
+COPY package.json /workspace/package.json
+RUN corepack install
 
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer
