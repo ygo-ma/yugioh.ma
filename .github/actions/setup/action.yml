@@ -1,5 +1,5 @@
 name: Setup
-description: Set up Bun and install dependencies
+description: Set up pnpm, Node.js, and install dependencies
 
 runs:
   using: composite
