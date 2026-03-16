@@ -1,8 +1,9 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-export const tournaments = sqliteTable("tournaments", {
+export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

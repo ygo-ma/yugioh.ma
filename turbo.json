@@ -4,8 +4,7 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true,
-      "interactive": true
+      "persistent": true
     },
     "lint": {
       "dependsOn": ["^build"],

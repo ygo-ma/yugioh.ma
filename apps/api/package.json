@@ -9,7 +9,9 @@
     "./db/schema": "./src/db/schema.ts"
   },
   "scripts": {
-    "lint": "oxfmt --check && oxlint -c ../../.oxlintrc.json && tsc --noEmit"
+    "lint": "oxfmt --check && oxlint -c ../../.oxlintrc.json && tsc --noEmit",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {
     "@libsql/client": "catalog:",
@@ -23,6 +25,7 @@
     "@types/node": "catalog:",
     "@ygoma/tsconfig": "workspace:*",
     "drizzle-kit": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }

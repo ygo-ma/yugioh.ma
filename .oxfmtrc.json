@@ -1,6 +1,11 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"],
+  "ignorePatterns": [
+    "**/routeTree.gen.ts",
+    "**/.turbo/",
+    "**/node_modules/",
+    "**/drizzle/meta/"
+  ],
   "printWidth": 80,
   "trailingComma": "none",
   "overrides": [
