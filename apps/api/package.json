@@ -12,10 +12,13 @@
     "lint": "oxfmt --check && oxlint && tsc --noEmit"
   },
   "dependencies": {
+    "better-sqlite3": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "catalog:",
+    "@types/node": "catalog:",
     "@ygoma/tsconfig": "workspace:*",
     "drizzle-kit": "catalog:",
     "typescript": "catalog:"
