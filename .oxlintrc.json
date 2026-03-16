@@ -1,36 +1,38 @@
-import { defineConfig } from "oxlint";
-
-export default defineConfig({
-  ignorePatterns: ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"],
-  plugins: ["react", "unicorn", "typescript", "import"],
-  categories: {
-    correctness: "error",
-    nursery: "error",
-    pedantic: "warn",
-    suspicious: "error",
-    perf: "error",
-    restriction: "error",
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"],
+  "plugins": ["react", "unicorn", "typescript", "import"],
+  "categories": {
+    "correctness": "error",
+    "nursery": "error",
+    "pedantic": "warn",
+    "suspicious": "error",
+    "perf": "error",
+    "restriction": "error"
   },
-  rules: {
+  "rules": {
     "eslint/arrow-body-style": "off",
     "eslint/id-length": "error",
-    "eslint/no-unused-vars": "off", // ts checks this
-    "eslint/no-undef": "off", // ts checks this
-    "eslint/no-console": "off", // will be stripped on build
+    "eslint/no-unused-vars": "off",
+    "eslint/no-undef": "off",
+    "eslint/no-console": "off",
 
+    // Import
     "eslint-plugin-import/no-default-export": "off",
     "eslint-plugin-import/no-relative-parent-imports": "off",
     "import/no-anonymous-default-export": "error",
 
+    // React
     "eslint-plugin-react/jsx-filename-extension": [
       "error",
-      { extensions: [".tsx"] },
+      { "extensions": [".tsx"] }
     ],
-    "eslint-plugin-react/no-multi-comp": ["warn", { ignoreStateless: true }],
+    "eslint-plugin-react/no-multi-comp": ["warn", { "ignoreStateless": true }],
     "eslint-plugin-react/only-export-components": "error",
     "eslint-plugin-react/react-in-jsx-scope": "off",
     "react/only-export-components": "warn",
 
+    // Typescript
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-definitions": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -39,19 +41,19 @@ export default defineConfig({
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
     "@typescript-eslint/promise-function-async": [
       "error",
-      { checkArrowFunctions: false },
-    ],
+      { "checkArrowFunctions": false }
+    ]
   },
-  options: {
-    maxWarnings: 0,
-    typeAware: true,
+  "options": {
+    "maxWarnings": 0,
+    "typeAware": true
   },
-  overrides: [
+  "overrides": [
     {
-      files: ["**/routes/**/*.{ts,tsx}"],
-      rules: {
-        "eslint/no-use-before-define": "off",
-      },
-    },
-  ],
-});
+      "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx"],
+      "rules": {
+        "eslint/no-use-before-define": "off"
+      }
+    }
+  ]
+}

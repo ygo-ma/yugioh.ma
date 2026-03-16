@@ -7,7 +7,7 @@
     "dev": "vite dev --host 0.0.0.0",
     "build": "vite build",
     "start": "node .output/server/index.mjs",
-    "lint": "oxfmt --check . && oxlint && tsc -b"
+    "lint": "oxfmt --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "devDependencies": {
     "@tanstack/react-router": "catalog:",
@@ -17,7 +17,6 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@ygoma/api": "workspace:*",
-    "@ygoma/oxlint-config": "workspace:*",
     "@ygoma/tsconfig": "workspace:*",
     "nitro": "catalog:",
     "react": "catalog:",

@@ -9,7 +9,7 @@
     "./db/schema": "./src/db/schema.ts"
   },
   "scripts": {
-    "lint": "oxfmt --check && oxlint && tsc --noEmit"
+    "lint": "oxfmt --check && oxlint -c ../../.oxlintrc.json && tsc --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "catalog:",
@@ -19,7 +19,6 @@
   "devDependencies": {
     "@types/better-sqlite3": "catalog:",
     "@types/node": "catalog:",
-    "@ygoma/oxlint-config": "workspace:*",
     "@ygoma/tsconfig": "workspace:*",
     "drizzle-kit": "catalog:",
     "typescript": "catalog:"

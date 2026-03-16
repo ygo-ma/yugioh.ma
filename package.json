@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "husky",
     "lint": "oxfmt --check *.* && turbo lint",
-    "lint:fix": "oxlint --fix && oxfmt",
+    "lint:fix": "oxlint -c .oxlintrc.json --fix && oxfmt",
     "build": "turbo build",
     "dev": "turbo dev"
   },
@@ -14,6 +14,7 @@
     "husky": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "turbo": "catalog:"
   },
   "packageManager": "pnpm@10.32.1"

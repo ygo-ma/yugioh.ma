@@ -8,6 +8,7 @@
     },
     "lint": {
       "dependsOn": ["^build"],
+      "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.{ts,tsx}",
