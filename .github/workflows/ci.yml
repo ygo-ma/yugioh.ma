@@ -21,4 +21,4 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: which node && rm $(which node) && bun oxfmt --version && bun run lint
+        run: pnpm lint
