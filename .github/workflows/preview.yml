@@ -57,6 +57,7 @@ jobs:
           else
             RESULT=$(pnpm wrangler d1 create "$DB_NAME")
             DB_ID=$(echo "$RESULT" | grep 'database_id' | sed 's/.*= "\(.*\)"/\1/')
+            NEW_DB=true
           fi
 
           echo "Updating wrangler.toml with database $DB_NAME (ID: $DB_ID)"
@@ -64,6 +65,10 @@ jobs:
           sed -i "s/^database_id = .*/database_id = \"$DB_ID\"/" wrangler.toml
 
           pnpm wrangler d1 migrations apply "$DB_NAME" --remote
+
+          if [ "${NEW_DB:-}" = "true" ]; then
+            pnpm wrangler d1 execute "$DB_NAME" --remote --file=../api/drizzle/seed.sql
+          fi
 
       - name: Build
         working-directory: apps/web
