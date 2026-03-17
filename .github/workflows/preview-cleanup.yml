@@ -8,9 +8,7 @@ jobs:
   cleanup:
     name: Preview Cleanup
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ github.event_name == 'push' && 'preprod' || 'preview' }}
-      url: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+    environment: preview
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
