@@ -7,7 +7,7 @@ import { resolveSqlite } from "./sqlite";
 const seedPath = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "../..",
-  "drizzle/seed.sql",
+  "seed.sql",
 );
 
 const db = await resolveSqlite(process.env.DATABASE_URL);

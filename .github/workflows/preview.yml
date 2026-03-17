@@ -67,7 +67,7 @@ jobs:
           pnpm wrangler d1 migrations apply "$DB_NAME" --remote
 
           if [ "${NEW_DB:-}" = "true" ]; then
-            pnpm wrangler d1 execute "$DB_NAME" --remote --file=../api/drizzle/seed.sql
+            pnpm wrangler d1 execute "$DB_NAME" --remote --file=../api/seed.sql
           fi
 
       - name: Build
