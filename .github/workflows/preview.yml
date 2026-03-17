@@ -34,15 +34,16 @@ jobs:
 
       - name: Set branch slug
         id: branch
+        env:
+          SLUG: ${{ github.head_ref || github.ref_name }}
         run: |
-          SLUG="${{ github.head_ref || github.ref_name }}"
           SLUG="${SLUG//\//-}"
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
-            echo "db_name=${{ env.STAGING_DB_NAME }}" >> "$GITHUB_OUTPUT"
+            echo "db_name=$STAGING_DB_NAME" >> "$GITHUB_OUTPUT"
           else
-            echo "db_name=${{ env.PREVIEW_DB_PREFIX }}-${SLUG}" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Setup D1 database
