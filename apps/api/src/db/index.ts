@@ -22,6 +22,8 @@ export async function resolveSqlite(databaseUrl?: string): Promise<Database> {
 let cachedDb: Database | null = null;
 
 async function resolveDatabase(env: AppEnv["Bindings"]): Promise<Database> {
+  console.log("DB Binding", env.DB);
+
   // D1 is available (Cloudflare Workers/Pages with a D1 binding)
   if (env.DB) {
     const { drizzle } = await import("drizzle-orm/d1");

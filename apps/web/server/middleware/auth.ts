@@ -1,12 +1,10 @@
 import { defineEventHandler } from "nitro/h3";
-import type { NitroEventContext } from "../nitro-context";
 
 export default defineEventHandler((event) => {
-  const context = event.context as NitroEventContext;
+  const cfValue = event.runtime?.cloudflare?.env.BASIC_AUTH_CREDENTIALS;
   const credentials =
-    context.cloudflare?.env.BASIC_AUTH_CREDENTIALS ??
-    process.env.BASIC_AUTH_CREDENTIALS ??
-    "";
+    (typeof cfValue === "string" ? cfValue : null) ??
+    process.env.BASIC_AUTH_CREDENTIALS;
 
   if (!credentials) {
     return;
