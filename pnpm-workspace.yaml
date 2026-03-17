@@ -22,7 +22,7 @@ catalog:
   hono: 4.12.8
   husky: 9.1.7
   nitro: 3.0.260311-beta
-  oxfmt: 0.40.0
+  oxfmt: 0.41.0
   oxlint: 1.55.0
   oxlint-tsgolint: 0.17.0
   react: 19.2.4
