@@ -9,8 +9,8 @@ onlyBuiltDependencies:
   - workerd
 
 catalog:
-  "@tanstack/react-router": 1.167.1
-  "@tanstack/react-start": 1.166.12
+  "@tanstack/react-router": 1.167.3
+  "@tanstack/react-start": 1.166.14
   "@types/better-sqlite3": 7.6.13
   "@types/node": 24.12.0
   "@types/react": 19.2.14
