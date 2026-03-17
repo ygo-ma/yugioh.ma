@@ -20,6 +20,7 @@
     "eslint/no-unused-vars": "off",
     "eslint/no-undef": "off",
     "eslint/no-console": "off",
+    "eslint/no-undefined": "off",
 
     // Import
     "eslint-plugin-import/no-default-export": "off",
@@ -44,7 +45,6 @@
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
     "@typescript-eslint/consistent-return": "off",
-    "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/promise-function-async": [
       "error",
       { "checkArrowFunctions": false }

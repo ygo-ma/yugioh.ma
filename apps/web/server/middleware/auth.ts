@@ -6,7 +6,7 @@ export default defineEventHandler((event) => {
     (typeof cfValue === "string" ? cfValue : null) ??
     process.env.BASIC_AUTH_CREDENTIALS;
 
-  if (!credentials) {
+  if (credentials === undefined || credentials.trim() === "") {
     return;
   }
 
