@@ -1,5 +1,5 @@
 import * as schema from "./schema";
-import { resolveSqlite } from ".";
+import { resolveSqlite } from "./sqlite";
 
 const db = await resolveSqlite(process.env.DATABASE_URL);
 
