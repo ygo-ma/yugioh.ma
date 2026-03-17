@@ -15,7 +15,8 @@ jobs:
     steps:
       - name: Delete D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        env:
+          SLUG: ${{ github.head_ref }}
         run: |
-          SLUG="${{ github.head_ref }}"
-          SLUG="${SLUG//\//-}"
-          npx wrangler d1 delete "ygoma-preview-${SLUG}" --skip-confirmation || true
+          npx wrangler@4.74.0 d1 delete "ygoma-preview-${SLUG//\//-}" \
+            --skip-confirmation || true
