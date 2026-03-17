@@ -10,7 +10,9 @@ jobs:
   preview:
     name: Checks & Deploy Preview
     runs-on: ubuntu-latest
-    environment: staging
+    environment:
+      name: ${{ github.event_name == 'push' && 'preprod' || 'preview' }}
+      url: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
     permissions:
       contents: read
       pull-requests: write
@@ -86,14 +88,3 @@ jobs:
             pages deploy dist
             --project-name=${{ env.STAGING_PROJECT_NAME }}
             --branch=${{ github.head_ref || github.ref_name }}
-
-      - name: Comment preview URL
-        if: >-
-          github.event_name == 'pull_request' &&
-          steps.deploy.outcome == 'success'
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          header: preview-deployment
-          message: >-
-            **Preview deployment:**
-            ${{ steps.deploy.outputs.pages-deployment-alias-url }}
