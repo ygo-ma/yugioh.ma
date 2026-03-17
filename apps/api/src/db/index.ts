@@ -23,7 +23,7 @@ async function resolveDatabase(env: AppEnv["Bindings"]): Promise<Database> {
   // Resolve the right sqlite-based database on Node.js and cache it
   if (!cachedDb) {
     const { resolveSqlite } = await import("./sqlite");
-    cachedDb = await resolveSqlite();
+    cachedDb = await resolveSqlite(process.env.DATABASE_URL);
   }
 
   return cachedDb;
