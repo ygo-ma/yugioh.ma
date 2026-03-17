@@ -10,15 +10,15 @@ jobs:
     name: Checks & Deploy Preview
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.event_name == 'push' && 'preprod' || 'preview' }}
-      url: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+      name: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
+      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || 'https://staging.yugioh.ma/' }}
     permissions:
       contents: read
       pull-requests: write
     env:
       TURBO_TELEMETRY_DISABLED: 1
       STAGING_PROJECT_NAME: ygoma-staging
-      PREPROD_DB_NAME: ygoma-preprod
+      STAGING_DB_NAME: ygoma-staging
       PREVIEW_DB_PREFIX: ygoma-preview
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -34,15 +34,16 @@ jobs:
 
       - name: Set branch slug
         id: branch
+        env:
+          SLUG: ${{ github.head_ref || github.ref_name }}
         run: |
-          SLUG="${{ github.head_ref || github.ref_name }}"
           SLUG="${SLUG//\//-}"
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
-            echo "db_name=${{ env.PREPROD_DB_NAME }}" >> "$GITHUB_OUTPUT"
+            echo "db_name=$STAGING_DB_NAME" >> "$GITHUB_OUTPUT"
           else
-            echo "db_name=${{ env.PREVIEW_DB_PREFIX }}-${SLUG}" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Setup D1 database
