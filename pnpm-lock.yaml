@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@cloudflare/workers-types':
-      specifier: 4.20260316.1
-      version: 4.20260316.1
+      specifier: 4.20260317.1
+      version: 4.20260317.1
     '@libsql/client':
       specifier: 0.17.0
       version: 0.17.0
@@ -103,14 +103,14 @@ importers:
         version: 0.17.0
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)
+        version: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)
       hono:
         specifier: 'catalog:'
         version: 4.12.8
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
-        version: 4.20260316.1
+        version: 4.20260317.1
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.0
@@ -155,7 +155,7 @@ importers:
         version: link:../../packages/tsconfig
       nitro:
         specifier: 'catalog:'
-        version: 3.0.260311-beta(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))(miniflare@4.20260312.1)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0))
+        version: 3.0.260311-beta(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))(miniflare@4.20260312.1)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0))
       react:
         specifier: 'catalog:'
         version: 19.2.4
@@ -170,7 +170,7 @@ importers:
         version: 8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0)
       wrangler:
         specifier: 'catalog:'
-        version: 4.74.0(@cloudflare/workers-types@4.20260316.1)
+        version: 4.74.0(@cloudflare/workers-types@4.20260317.1)
 
   packages/tsconfig:
     dependencies:
@@ -316,8 +316,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@4.20260316.1':
-    resolution: {integrity: sha512-HUZ+vQD8/1A4Fz/8WAlzYWcS5W5u3Nu7Dv9adkIkmLfeKqMIRn01vc4nSUBar60KkmohyQHkPi8jtWV/zazvAg==}
+  '@cloudflare/workers-types@4.20260317.1':
+    resolution: {integrity: sha512-+G4eVwyCpm8Au1ex8vQBCuA9wnwqetz4tPNRoB/53qvktERWBRMQnrtvC1k584yRE3emMThtuY0gWshvSJ++PQ==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -3026,7 +3026,7 @@ snapshots:
   '@cloudflare/workerd-windows-64@1.20260312.1':
     optional: true
 
-  '@cloudflare/workers-types@4.20260316.1': {}
+  '@cloudflare/workers-types@4.20260317.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -4132,11 +4132,11 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)):
+  db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)):
     optionalDependencies:
       '@libsql/client': 0.17.0
       better-sqlite3: 12.8.0
-      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)
+      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)
 
   debug@4.4.3:
     dependencies:
@@ -4183,9 +4183,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0):
+  drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0):
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20260316.1
+      '@cloudflare/workers-types': 4.20260317.1
       '@libsql/client': 0.17.0
       '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.8.0
@@ -4546,11 +4546,11 @@ snapshots:
 
   nf3@0.3.11: {}
 
-  nitro@3.0.260311-beta(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))(miniflare@4.20260312.1)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0)):
+  nitro@3.0.260311-beta(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))(miniflare@4.20260312.1)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.11.12)
-      db0: 0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))
+      db0: 0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))
       env-runner: 0.1.6(miniflare@4.20260312.1)
       h3: 2.0.1-rc.16(crossws@0.4.4(srvx@0.11.12))
       hookable: 6.1.0
@@ -4561,7 +4561,7 @@ snapshots:
       rolldown: 1.0.0-rc.9
       srvx: 0.11.12
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.6(db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)))(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.6(db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)))(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       vite: 8.0.0(@types/node@24.12.0)(esbuild@0.27.4)(tsx@4.21.0)
     transitivePeerDependencies:
@@ -4979,9 +4979,9 @@ snapshots:
       picomatch: 4.0.3
       webpack-virtual-modules: 0.6.2
 
-  unstorage@2.0.0-alpha.6(db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)))(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.6(db0@0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0)))(ofetch@2.0.0-alpha.3):
     optionalDependencies:
-      db0: 0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260316.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))
+      db0: 0.3.4(@libsql/client@0.17.0)(better-sqlite3@12.8.0)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.8.0))
       ofetch: 2.0.0-alpha.3
 
   update-browserslist-db@1.2.3(browserslist@4.28.1):
@@ -5040,7 +5040,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260312.1
       '@cloudflare/workerd-windows-64': 1.20260312.1
 
-  wrangler@4.74.0(@cloudflare/workers-types@4.20260316.1):
+  wrangler@4.74.0(@cloudflare/workers-types@4.20260317.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260312.1)
@@ -5051,7 +5051,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260312.1
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20260316.1
+      '@cloudflare/workers-types': 4.20260317.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
