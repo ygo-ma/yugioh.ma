@@ -6,7 +6,7 @@ import { resolveSqlite } from "./sqlite";
 
 const seedPath = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../..",
+  "../../..",
   "seed.sql",
 );
 

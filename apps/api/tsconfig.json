@@ -1,4 +1,0 @@
-{
-  "extends": "@ygoma/tsconfig/tsconfig.node.json",
-  "include": ["src/**/*.ts", "oxlint.config.ts"]
-}

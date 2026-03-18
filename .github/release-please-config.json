@@ -17,9 +17,6 @@
     ".": {
       "component": "workspace"
     },
-    "apps/api": {
-      "component": "api"
-    },
     "apps/web": {
       "component": "web"
     }
