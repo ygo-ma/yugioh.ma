@@ -37,7 +37,9 @@ jobs:
         env:
           SLUG: ${{ github.head_ref || github.ref_name }}
         run: |
-          SLUG="${SLUG//\//-}"
+          # Replace non-alphanumeric characters with dashes,
+          # collapse multiple dashes, and trim leading/trailing dashes.
+          SLUG=$(echo -n "$SLUG" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
