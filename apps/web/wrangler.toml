@@ -3,7 +3,8 @@ compatibility_date = "2026-03-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# Production / preprod (main branch deploys)
+# Default dev/local D1 database config.
+# CI overwrites database_name/database_id for production/preprod (main branch) deploys.
 [[d1_databases]]
 binding = "DB"
 database_name = "dev"
