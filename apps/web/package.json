@@ -7,6 +7,11 @@
     "dev": "vite dev --host 0.0.0.0",
     "build": "vite build",
     "build:preview": "NITRO_PRESET=cloudflare-pages vite build",
+    "cf:preview": "NITRO_PRESET=cloudflare-pages vite build && wrangler pages dev --ip 0.0.0.0 dist",
+    "cf:preview:watch": "wrangler pages dev --ip 0.0.0.0 dist",
+    "cf:db:migrate": "wrangler d1 migrations apply DB --local",
+    "cf:db:seed": "wrangler d1 execute DB --local --file=../api/seed.sql",
+    "cf:db:reset": "rm -rf .wrangler/state && wrangler d1 migrations apply DB --local && wrangler d1 execute DB --local --file=../api/seed.sql",
     "start": "node .output/server/index.mjs",
     "lint": "oxfmt --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },

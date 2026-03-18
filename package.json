@@ -11,7 +11,12 @@
     "dev": "turbo dev",
     "db:generate": "pnpm --filter api db:generate",
     "db:migrate": "pnpm --filter api db:migrate",
-    "db:seed": "pnpm --filter api db:seed"
+    "db:seed": "pnpm --filter api db:seed",
+    "db:reset": "pnpm --filter api db:reset",
+    "cf:preview": "pnpm --filter web cf:preview",
+    "cf:db:migrate": "pnpm --filter web cf:db:migrate",
+    "cf:db:seed": "pnpm --filter web cf:db:seed",
+    "cf:db:reset": "pnpm --filter web cf:db:reset"
   },
   "devDependencies": {
     "husky": "catalog:",

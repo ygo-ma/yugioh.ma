@@ -13,10 +13,6 @@ export default defineConfig({
     nitro({
       serverDir: "./server",
       errorHandler: "./server/error.ts",
-      rolldownConfig: {
-        // Node-only DB drivers — these need node:http, which breaks in CF.
-        external: [/^drizzle-orm\/libsql$/],
-      },
     }),
   ],
 });
