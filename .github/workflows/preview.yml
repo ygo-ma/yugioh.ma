@@ -37,14 +37,21 @@ jobs:
         env:
           SLUG: ${{ github.head_ref || github.ref_name }}
         run: |
-          SLUG="${SLUG//\//-}"
-          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          # Replace non-alphanumeric characters with dashes,
+          # collapse multiple dashes, and trim leading/trailing dashes.
+          # If the result is empty, use "pr-<number>" as a fallback.
+          SLUG=$(echo -n "$SLUG" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
+          if [ -z "$SLUG" ]; then
+            SLUG="pr-${{ github.event.pull_request.number }}"
+          fi
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
             echo "db_name=$STAGING_DB_NAME" >> "$GITHUB_OUTPUT"
           else
             echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
           fi
+
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
       - name: Setup D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
