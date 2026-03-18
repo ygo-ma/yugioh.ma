@@ -11,6 +11,7 @@
     "lint": "oxfmt --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "devDependencies": {
+    "@sentry/tanstackstart-react": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@tanstack/react-start": "catalog:",
     "@types/node": "catalog:",

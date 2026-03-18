@@ -4,7 +4,9 @@ import {
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
+import * as Sentry from "@sentry/tanstackstart-react";
 import type { ReactNode } from "react";
+import { ErrorFallback } from "~/components/error-fallback";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -35,7 +37,9 @@ function RootDocument({ children }: { children: ReactNode }) {
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <Sentry.ErrorBoundary fallback={ErrorFallback}>
+        <Outlet />
+      </Sentry.ErrorBoundary>
     </RootDocument>
   );
 }
