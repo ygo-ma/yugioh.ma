@@ -59,7 +59,15 @@
     {
       "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx"],
       "rules": {
+        // Route components should be defined after the route itself.
         "eslint/no-use-before-define": "off"
+      }
+    },
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        // Declaration files can export {}
+        "unicorn/require-module-specifiers": "off"
       }
     }
   ]
