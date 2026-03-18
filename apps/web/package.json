@@ -13,8 +13,8 @@
     "cf:db:reset": "rimraf .wrangler/state && wrangler d1 migrations apply dev --local && wrangler d1 execute dev --local --file=seed.sql",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "tsx server/lib/db/seed.ts",
-    "db:reset": "rimraf sqlite.db && drizzle-kit migrate && tsx server/lib/db/seed.ts",
+    "db:seed": "tsx server/db/seed.ts",
+    "db:reset": "rimraf sqlite.db && drizzle-kit migrate && tsx server/db/seed.ts",
     "start": "node .output/server/index.mjs",
     "lint": "oxfmt --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
