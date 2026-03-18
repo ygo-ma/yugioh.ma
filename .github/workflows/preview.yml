@@ -103,9 +103,10 @@ jobs:
           HEALTHCHECK_AUTH: ${{ secrets.HEALTHCHECK_AUTH }}
         run: |
           echo "$DEPLOY_URL/api/health"
-          ARGS=(-fSL --retry 5 --retry-delay 5 --retry-all-errors)
+          ARGS=(-fsSL --retry 5 --retry-delay 5 --retry-all-errors)
           if [ -n "$HEALTHCHECK_AUTH" ]; then
             echo "Using basic auth for health check"
             ARGS+=(-H "Authorization: Basic $HEALTHCHECK_AUTH")
           fi
+          echo
           curl "${ARGS[@]}" "$DEPLOY_URL/api/health"
