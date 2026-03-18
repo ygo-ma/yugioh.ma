@@ -3,6 +3,9 @@ compatibility_date = "2026-03-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
+[dev]
+ip = "0.0.0.0"
+
 # Production / preprod (main branch deploys)
 [[d1_databases]]
 binding = "DB"
