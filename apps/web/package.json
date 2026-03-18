@@ -7,6 +7,10 @@
     "dev": "vite dev --host 0.0.0.0",
     "build": "vite build",
     "build:preview": "NITRO_PRESET=cloudflare-pages vite build",
+    "cf:preview": "pnpm build:preview && wrangler pages dev --log-level=error dist",
+    "cf:db:migrate": "wrangler d1 migrations apply dev --local",
+    "cf:db:seed": "wrangler d1 execute dev --local --file=../api/seed.sql",
+    "cf:db:reset": "rimraf .wrangler/state && wrangler d1 migrations apply dev --local && wrangler d1 execute dev --local --file=../api/seed.sql",
     "start": "node .output/server/index.mjs",
     "lint": "oxfmt --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
@@ -22,6 +26,7 @@
     "nitro": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "rimraf": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "wrangler": "catalog:"
