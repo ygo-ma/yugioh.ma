@@ -9,10 +9,6 @@ function handleClickError() {
   throw new Error("Client-side onclick error");
 }
 
-function handleFetchError() {
-  void fetch("/api/does-not-exist");
-}
-
 function handleUnhandledRejection() {
   void Promise.reject(new Error("Unhandled promise rejection"));
 }
@@ -41,11 +37,6 @@ function SentryTest() {
         <li>
           <button type="button" onClick={handleClickError}>
             Throw error on click
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={handleFetchError}>
-            Fetch non-existent API route
           </button>
         </li>
         <li>
