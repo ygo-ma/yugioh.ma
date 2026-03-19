@@ -1,8 +1,34 @@
+import * as Sentry from "@sentry/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/sentry-test/")({
   component: SentryTest,
 });
+
+function handleClickError() {
+  throw new Error("Client-side onclick error");
+}
+
+function handleFetchError() {
+  fetch("/api/does-not-exist").catch(() => null);
+}
+
+function handleUnhandledRejection() {
+  void Promise.reject(new Error("Unhandled promise rejection"));
+}
+
+function handleCaptureMessage() {
+  Sentry.captureMessage("Manual test message from /sentry-test");
+}
+
+function handleBreadcrumbError() {
+  Sentry.addBreadcrumb({
+    message: "User clicked breadcrumb test",
+    level: "info",
+  });
+  Sentry.addBreadcrumb({ message: "About to throw", level: "warning" });
+  throw new Error("Error with manual breadcrumbs");
+}
 
 function SentryTest() {
   return (
@@ -13,23 +39,28 @@ function SentryTest() {
           <Link to="/sentry-test/error">Route that throws on render</Link>
         </li>
         <li>
-          <button
-            type="button"
-            onClick={() => {
-              throw new Error("Client-side onclick error");
-            }}
-          >
+          <button type="button" onClick={handleClickError}>
             Throw error on click
           </button>
         </li>
         <li>
-          <button
-            type="button"
-            onClick={() => {
-              fetch("/api/does-not-exist").catch(() => null);
-            }}
-          >
+          <button type="button" onClick={handleFetchError}>
             Fetch non-existent API route
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={handleUnhandledRejection}>
+            Unhandled promise rejection
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={handleCaptureMessage}>
+            Send captureMessage
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={handleBreadcrumbError}>
+            Error with breadcrumbs
           </button>
         </li>
       </ul>
