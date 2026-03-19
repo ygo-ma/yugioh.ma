@@ -12,7 +12,7 @@ export default defineEventHandler((event) => {
     const wrapperOptions = {
       options: {
         dsn,
-        environment: env.SENTRY_ENVIRONMENT ?? process.env.ENVIRONMENT,
+        environment: env.SENTRY_ENVIRONMENT ?? "development",
         release: env.SENTRY_RELEASE,
         dist: env.SENTRY_DIST,
       },
