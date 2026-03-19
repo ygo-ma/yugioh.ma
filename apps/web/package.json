@@ -10,11 +10,11 @@
     "cf:preview": "bun run build:preview && wrangler pages dev --log-level=error dist",
     "cf:db:migrate": "wrangler d1 migrations apply dev --local",
     "cf:db:seed": "wrangler d1 execute dev --local --file=seed.sql",
-    "cf:db:reset": "rimraf .wrangler/state && bun run cf:db:migrate && bun run cf:db:seed",
+    "cf:db:reset": "rimraf .wrangler/state && bun cf:db:migrate && bun cf:db:seed",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun server/db/seed.ts",
-    "db:reset": "rimraf sqlite.db && bun run db:migrate && bun run db:seed",
+    "db:reset": "rimraf sqlite.db && bun db:migrate && bun db:seed",
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {

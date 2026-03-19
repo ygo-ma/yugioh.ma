@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: bun run lint
+        run: bun lint
 
       - name: Set branch slug
         id: branch
