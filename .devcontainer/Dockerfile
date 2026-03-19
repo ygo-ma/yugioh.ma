@@ -1,4 +1,4 @@
-FROM node:24.14.0
+FROM oven/bun:1.3.11
 
 # Install basic dev tools and setup locale
 RUN apt update -y \
@@ -7,12 +7,9 @@ RUN apt update -y \
     && locale-gen \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable corepack to manage package managers like pnpm
-RUN corepack enable
-
 # Create the dev user and have him sudo without password
 ENV USER=dev
-RUN userdel node \
+RUN userdel bun \
     && useradd -mG sudo -s /bin/bash $USER \
     && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
@@ -25,10 +22,6 @@ USER $USER
 
 # Remove sudo note on login
 RUN touch /home/$USER/.sudo_as_admin_successful
-
-# Enable corepack and pre-install pnpm
-COPY package.json /workspace/package.json
-RUN corepack install
 
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer

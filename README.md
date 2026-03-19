@@ -6,19 +6,18 @@ Yu-Gi-Oh platform for tournaments, decks, collections, trading, and blog content
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) v24+
-- [pnpm](https://pnpm.io) v10+
+- [Bun](https://bun.sh) v1.2+
 
 ### Install
 
 ```sh
-pnpm install
+bun install
 ```
 
 ### Development
 
 ```sh
-pnpm dev
+bun dev
 ```
 
 The web app runs at `http://localhost:3000` with the API proxied at `/api/*`.

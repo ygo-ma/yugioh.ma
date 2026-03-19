@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: pnpm lint
+        run: bun run lint
 
       - name: Set branch slug
         id: branch
@@ -64,11 +64,11 @@ jobs:
         env:
           DB_NAME: ${{ steps.branch.outputs.db_name }}
         run: |
-          EXISTING=$(pnpm wrangler d1 list --json | jq -r ".[] | select(.name == \"$DB_NAME\") | .uuid")
+          EXISTING=$(bunx wrangler d1 list --json | jq -r ".[] | select(.name == \"$DB_NAME\") | .uuid")
           if [ -n "$EXISTING" ]; then
             DB_ID="$EXISTING"
           else
-            RESULT=$(pnpm wrangler d1 create "$DB_NAME")
+            RESULT=$(bunx wrangler d1 create "$DB_NAME")
             DB_ID=$(echo "$RESULT" | grep 'database_id' | sed 's/.*= "\(.*\)"/\1/')
             NEW_DB=true
           fi
@@ -77,10 +77,10 @@ jobs:
           sed -i "s/^database_name = .*/database_name = \"$DB_NAME\"/" wrangler.toml
           sed -i "s/^database_id = .*/database_id = \"$DB_ID\"/" wrangler.toml
 
-          pnpm wrangler d1 migrations apply "$DB_NAME" --remote
+          bunx wrangler d1 migrations apply "$DB_NAME" --remote
 
           if [ "${NEW_DB:-}" = "true" ]; then
-            pnpm wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
+            bunx wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
           fi
 
       - name: Build
@@ -93,7 +93,7 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        run: pnpm build:preview
+        run: bun run build:preview
 
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''

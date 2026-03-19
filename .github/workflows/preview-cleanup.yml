@@ -27,5 +27,5 @@ jobs:
             SLUG="pr-${{ github.event.pull_request.number }}"
           fi
 
-          npx wrangler@4.74.0 d1 delete "$PREVIEW_DB_PREFIX-$SLUG" \
+          bunx wrangler@4.74.0 d1 delete "$PREVIEW_DB_PREFIX-$SLUG" \
             --skip-confirmation || true
