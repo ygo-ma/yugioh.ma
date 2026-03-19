@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
-      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || 'https://staging.yugioh.ma/' }}
+      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_DEFAULT_URL }}
     permissions:
       contents: read
       pull-requests: write
@@ -22,6 +22,7 @@ jobs:
       PREVIEW_DB_PREFIX: ygoma-preview
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      STAGING_DEFAULT_URL: https://staging.yugioh.ma
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -111,6 +112,6 @@ jobs:
       - name: Health check
         if: steps.deploy.outcome == 'success'
         env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_DEFAULT_URL }}
         run: |
           curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "$DEPLOY_URL/api/health"
