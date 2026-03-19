@@ -80,9 +80,13 @@ jobs:
             NEW_DB=true
           fi
 
-          echo "Updating wrangler.toml with database $DB_NAME (ID: $DB_ID)"
-          sed -i "s/^database_name = .*/database_name = \"$DB_NAME\"/" wrangler.toml
-          sed -i "s/^database_id = .*/database_id = \"$DB_ID\"/" wrangler.toml
+          echo "Updating wrangler.json with database $DB_NAME (ID: $DB_ID)"
+
+          jq --arg db_name "$DB_NAME" --arg db_id "$DB_ID" \
+            '.d1_databases[0].database_name = $db_name |
+             .d1_databases[0].database_id = $db_id' \
+            wrangler.json > wrangler.json.tmp
+          mv wrangler.json.tmp wrangler.json
 
           bunx wrangler d1 migrations apply "$DB_NAME" --remote
 
@@ -90,7 +94,27 @@ jobs:
             bunx wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
           fi
 
+      - name: Set runtime vars
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        working-directory: apps/web
+        env:
+          SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
+          SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
+          SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
+        run: |
+          jq --arg env "$SENTRY_ENVIRONMENT" \
+            --arg rel "$SENTRY_RELEASE" \
+            --arg dist "$SENTRY_DIST" \
+            '.vars.SENTRY_ENVIRONMENT = $env |
+             .vars.SENTRY_RELEASE = $rel |
+             .vars.SENTRY_DIST = $dist' \
+            wrangler.json > wrangler.json.tmp
+          mv wrangler.json.tmp wrangler.json
+
+          cat wrangler.json
+
       - name: Build
+        # Note: this should happen after any step that changes wrangler.json
         working-directory: apps/web
         env:
           VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
@@ -101,25 +125,6 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bun run build:preview
-
-      - name: Set runtime vars
-        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        working-directory: apps/web
-        env:
-          SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
-          SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
-          SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
-        run: |
-          VARS="[vars]
-          SENTRY_ENVIRONMENT = \"$SENTRY_ENVIRONMENT\"
-          SENTRY_RELEASE = \"$SENTRY_RELEASE\"
-          SENTRY_DIST = \"$SENTRY_DIST\""
-
-          if grep -q '^\[vars\]' wrangler.toml; then
-            sed -i "s/^\[vars\]/$VARS/" wrangler.toml
-          else
-            echo "$VARS" >> wrangler.toml
-          fi
 
       - name: Set Pages secrets
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
