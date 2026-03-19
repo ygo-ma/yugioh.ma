@@ -1,16 +1,15 @@
 import { defineEventHandler } from "nitro/h3";
+import type { CfBindings } from "../db/types";
 
 export default defineEventHandler((event) => {
   if (event.url.pathname === "/api/health") {
     return;
   }
 
-  const cfValue = event.runtime?.cloudflare?.env.BASIC_AUTH_CREDENTIALS;
-  const credentials =
-    (typeof cfValue === "string" ? cfValue : null) ??
-    process.env.BASIC_AUTH_CREDENTIALS;
+  const cfEnv = event.runtime?.cloudflare?.env as CfBindings | undefined;
+  const credentials = (cfEnv ?? process.env).BASIC_AUTH_CREDENTIALS;
 
-  if (credentials === undefined || credentials.trim() === "") {
+  if (!credentials || credentials.trim() === "") {
     return;
   }
 
