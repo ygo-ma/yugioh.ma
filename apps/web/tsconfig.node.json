@@ -1,9 +1,4 @@
 {
   "extends": "@ygoma/tsconfig/tsconfig.node.json",
-  "include": [
-    "server",
-    "vite.config.ts",
-    "drizzle.config.ts",
-    "oxlint.config.ts"
-  ]
+  "include": ["server", "*.config.ts"]
 }
