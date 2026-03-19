@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SentryTestIndexRouteImport } from './routes/sentry-test/index'
+import { Route as SentryTestErrorRouteImport } from './routes/sentry-test/error'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SentryTestIndexRoute = SentryTestIndexRouteImport.update({
+  id: '/sentry-test/',
+  path: '/sentry-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SentryTestErrorRoute = SentryTestErrorRouteImport.update({
+  id: '/sentry-test/error',
+  path: '/sentry-test/error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test/': typeof SentryTestIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test': typeof SentryTestIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test/': typeof SentryTestIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/sentry-test/error' | '/sentry-test/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/sentry-test/error' | '/sentry-test'
+  id: '__root__' | '/' | '/sentry-test/error' | '/sentry-test/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SentryTestErrorRoute: typeof SentryTestErrorRoute
+  SentryTestIndexRoute: typeof SentryTestIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sentry-test/': {
+      id: '/sentry-test/'
+      path: '/sentry-test'
+      fullPath: '/sentry-test/'
+      preLoaderRoute: typeof SentryTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sentry-test/error': {
+      id: '/sentry-test/error'
+      path: '/sentry-test/error'
+      fullPath: '/sentry-test/error'
+      preLoaderRoute: typeof SentryTestErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SentryTestErrorRoute: SentryTestErrorRoute,
+  SentryTestIndexRoute: SentryTestIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

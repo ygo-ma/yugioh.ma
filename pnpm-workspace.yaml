@@ -2,14 +2,11 @@ packages:
   - "packages/*"
   - "apps/*"
 
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - workerd
-
 catalog:
   "@cloudflare/workers-types": 4.20260317.1
   "@libsql/client": 0.17.0
+  "@sentry/react": 10.44.0
+  "@sentry/vite-plugin": 5.1.1
   "@tanstack/react-router": 1.167.4
   "@tanstack/react-start": 1.166.16
   "@types/node": 24.12.0
@@ -25,10 +22,16 @@ catalog:
   oxlint: 1.56.0
   oxlint-tsgolint: 0.17.0
   react: 19.2.4
-  rimraf: 6.1.3
   react-dom: 19.2.4
+  rimraf: 6.1.3
   tsx: 4.21.0
   turbo: 2.8.17
   typescript: 5.9.3
   vite: 8.0.0
   wrangler: 4.75.0
+
+onlyBuiltDependencies:
+  - "@sentry/cli"
+  - esbuild
+  - sharp
+  - workerd

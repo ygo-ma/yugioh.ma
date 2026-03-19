@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/actions/setup
@@ -52,6 +54,8 @@ jobs:
           fi
 
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
 
       - name: Setup D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -81,6 +85,14 @@ jobs:
 
       - name: Build
         working-directory: apps/web
+        env:
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_SENTRY_ENVIRONMENT: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
+          VITE_SENTRY_RELEASE: ${{ steps.branch.outputs.version }}
+          VITE_SENTRY_DIST: ${{ github.event_name == 'push' && 'staging' || 'preview' }}-${{ steps.branch.outputs.short_sha }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: pnpm build:preview
 
       - name: Deploy

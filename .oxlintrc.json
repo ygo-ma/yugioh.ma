@@ -21,6 +21,7 @@
     "eslint/no-undef": "off",
     "eslint/no-console": "off",
     "eslint/no-undefined": "off",
+    "eslint/no-void": "off",
 
     // Import
     "eslint-plugin-import/no-default-export": "off",
@@ -46,6 +47,7 @@
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
     "@typescript-eslint/consistent-return": "off",
+    "typescript/strict-boolean-expressions": "off",
     "@typescript-eslint/promise-function-async": [
       "error",
       { "checkArrowFunctions": false }
@@ -59,7 +61,15 @@
     {
       "files": ["**/routes/**/*.ts", "**/routes/**/*.tsx"],
       "rules": {
+        // Route components should be defined after the route itself.
         "eslint/no-use-before-define": "off"
+      }
+    },
+    {
+      "files": ["**/*.d.ts"],
+      "rules": {
+        // Declaration files can export {}
+        "unicorn/require-module-specifiers": "off"
       }
     }
   ]
