@@ -6,15 +6,15 @@ export function initSentryClient(router: ReturnType<typeof getRouter>): void {
   if (router.isServer) return;
 
   const {
-    VITE_SENTRY_DSN,
+    VITE_SENTRY_ENABLED,
     VITE_SENTRY_ENVIRONMENT,
     VITE_SENTRY_RELEASE,
     VITE_SENTRY_DIST,
   } = import.meta.env;
-  if (!VITE_SENTRY_DSN) return;
+  if (!VITE_SENTRY_ENABLED) return;
 
   Sentry.init({
-    dsn: VITE_SENTRY_DSN,
+    dsn: "https://reporter@errors.internal/0",
     tunnel: "/api/sentry",
     environment: VITE_SENTRY_ENVIRONMENT ?? "development",
     release: VITE_SENTRY_RELEASE,

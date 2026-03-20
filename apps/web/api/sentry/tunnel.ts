@@ -2,78 +2,61 @@
 // server so ad-blockers that block requests to *.sentry.io don't silently
 // drop error reports. The client SDK is configured with `tunnel: "/api/sentry"`
 // which sends envelopes here instead of directly to Sentry's ingest.
+//
+// The client uses a dummy DSN (never the real one). This tunnel rewrites the
+// envelope header with the real server-side DSN before forwarding to Sentry.
 
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../db/types";
 
-interface UpstreamUrl {
-  url: string;
+// Parse the server-side DSN to extract the upstream ingest URL.
+// DSN format: https://<key>@<host>/<project-id>
+function parseUpstreamUrl(serverDsn: string): string {
+  let url: URL;
+  try {
+    url = new URL(serverDsn);
+  } catch {
+    throw new HTTPException(500);
+  }
+
+  if (!url.hostname.endsWith(".sentry.io")) {
+    throw new HTTPException(500);
+  }
+
+  const projectId = url.pathname.replaceAll("/", "");
+  return `https://${url.hostname}/api/${projectId}/envelope/`;
 }
 
-interface ValidationError {
-  error: 400 | 403;
-}
-
-// Sentry envelopes are newline-delimited: the first line is a JSON header
-// containing the DSN the client used. Parse it out so we can validate it.
-// Only the header line is decoded as UTF-8 — the rest of the envelope may
-// contain binary payloads (e.g., attachments) that must not be re-encoded.
-function parseEnvelopeHeader(body: Uint8Array): string | undefined {
-  // Newline character
+// Rewrite the envelope's header line, replacing the dummy DSN with the real
+// server-side DSN. The rest of the envelope (item headers + binary payloads)
+// is left untouched.
+function rewriteEnvelope(body: Uint8Array, serverDsn: string): Uint8Array {
   const newlineIndex = body.indexOf(0x0a);
   if (newlineIndex === -1) {
-    return undefined;
+    throw new HTTPException(400);
   }
 
+  let headerJson: string;
   try {
     const headerLine = new TextDecoder().decode(body.subarray(0, newlineIndex));
-    const header: unknown = JSON.parse(headerLine);
-    if (typeof header === "object" && header !== null && "dsn" in header) {
-      const { dsn } = header as { dsn: unknown };
-      if (typeof dsn === "string") {
-        return dsn;
-      }
+    const parsed: unknown = JSON.parse(headerLine);
+    if (typeof parsed !== "object" || parsed === null) {
+      throw new HTTPException(400);
     }
-  } catch {
-    // Invalid DSN or malformed JSON
+    headerJson = JSON.stringify({ ...parsed, dsn: serverDsn });
+  } catch (error) {
+    if (error instanceof HTTPException) throw error;
+    throw new HTTPException(400);
   }
 
-  return undefined;
-}
+  const newHeader = new TextEncoder().encode(headerJson);
+  const rest = body.subarray(newlineIndex); // includes the newline
 
-// Prevent open-relay abuse: ensure the client-supplied DSN points to
-// *.sentry.io and that its project ID matches our server-side DSN.
-function validateAndBuildUpstreamUrl(
-  clientDsn: string,
-  serverDsn: string,
-): UpstreamUrl | ValidationError {
-  // Check if the URLs are valid before accessing their properties
-  let clientUrl: URL;
-  let serverUrl: URL;
-  try {
-    clientUrl = new URL(clientDsn);
-    serverUrl = new URL(serverDsn);
-  } catch {
-    return { error: 400 };
-  }
-
-  // Only allow forwarding to Sentry's own ingest hosts
-  if (!clientUrl.hostname.endsWith(".sentry.io")) {
-    return { error: 403 };
-  }
-
-  // Project ID must match so attackers can't relay to arbitrary projects
-  const clientProjectId = clientUrl.pathname.replaceAll("/", "");
-  const serverProjectId = serverUrl.pathname.replaceAll("/", "");
-
-  if (clientProjectId !== serverProjectId) {
-    return { error: 403 };
-  }
-
-  return {
-    url: `https://${clientUrl.hostname}/api/${clientProjectId}/envelope/`,
-  };
+  const result = new Uint8Array(newHeader.length + rest.length);
+  result.set(newHeader, 0);
+  result.set(rest, newHeader.length);
+  return result;
 }
 
 const tunnel = new Hono<AppEnv>();
@@ -85,6 +68,8 @@ export default tunnel.post("/", async (context) => {
   if (!dsn) {
     throw new HTTPException(404);
   }
+
+  const upstreamUrl = parseUpstreamUrl(dsn);
 
   // Reject obviously oversized payloads before reading the body
   const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
@@ -99,23 +84,14 @@ export default tunnel.post("/", async (context) => {
     throw new HTTPException(body.length === 0 ? 400 : 413);
   }
 
-  // Extract the DSN the client claims to use
-  const clientDsn = parseEnvelopeHeader(body);
-  if (!clientDsn) {
-    throw new HTTPException(400);
-  }
+  // Rewrite the envelope header with the real DSN
+  const rewritten = rewriteEnvelope(body, dsn);
 
-  // Validate and build the upstream Sentry ingest URL
-  const result = validateAndBuildUpstreamUrl(clientDsn, dsn);
-  if ("error" in result) {
-    throw new HTTPException(result.error);
-  }
-
-  // Forward the envelope as-is to Sentry
+  // Forward the rewritten envelope to Sentry
   try {
-    const response = await fetch(result.url, {
+    const response = await fetch(upstreamUrl, {
       method: "POST",
-      body,
+      body: rewritten,
       headers: { "Content-Type": "application/x-sentry-envelope" },
     });
 

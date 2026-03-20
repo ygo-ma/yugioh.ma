@@ -117,7 +117,7 @@ jobs:
         # Note: this should happen after any step that changes wrangler.json
         working-directory: apps/web
         env:
-          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_ENABLED: ${{ secrets.SENTRY_DSN != '' && 'true' || '' }}
           VITE_SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           VITE_SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
           VITE_SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
