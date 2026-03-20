@@ -65,19 +65,66 @@ function validateOrigin(origin: string | undefined, host: string): void {
   }
 }
 
-// Read and validate the raw envelope body, checking content-length before
-// buffering and verifying actual size after.
+// Read one chunk from the stream into the buffer. Returns the new offset.
+// Recurses until the buffer is full, the stream ends, or a chunk exceeds
+// the remaining space (in which case only the fitting portion is copied).
+async function readStreamChunk(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  buffer: Uint8Array,
+  offset: number,
+): Promise<number> {
+  if (offset >= buffer.length) return offset;
+
+  const { done, value } = await reader.read();
+  if (done) return offset;
+
+  const remaining = buffer.length - offset;
+  if (value.length > remaining) {
+    buffer.set(value.subarray(0, remaining), offset);
+    return buffer.length;
+  }
+
+  buffer.set(value, offset);
+  return readStreamChunk(reader, buffer, offset + value.length);
+}
+
+// Read and validate the raw envelope body. Requires Content-Length, streams
+// into a pre-allocated buffer capped at MAX_BODY_BYTES, and cancels the
+// reader to signal the runtime to stop receiving excess data.
 async function readEnvelopeBody(raw: Request): Promise<Uint8Array> {
-  const contentLength = Number(raw.headers.get("content-length"));
+  const header = raw.headers.get("content-length");
+  if (!header) {
+    throw new HTTPException(400);
+  }
+
+  const contentLength = Number(header);
+  if (!Number.isInteger(contentLength) || contentLength <= 0) {
+    throw new HTTPException(400);
+  }
+
   if (contentLength > MAX_BODY_BYTES) {
     throw new HTTPException(413);
   }
 
-  const body = new Uint8Array(await raw.arrayBuffer());
-  if (body.length === 0 || body.length > MAX_BODY_BYTES) {
-    throw new HTTPException(body.length === 0 ? 400 : 413);
+  const reader: ReadableStreamDefaultReader<Uint8Array> | undefined =
+    raw.body?.getReader();
+  if (!reader) {
+    throw new HTTPException(400);
   }
-  return body;
+
+  const buffer = new Uint8Array(contentLength);
+  let bytesRead: number;
+  try {
+    bytesRead = await readStreamChunk(reader, buffer, 0);
+  } finally {
+    await reader.cancel();
+  }
+
+  if (bytesRead === 0) {
+    throw new HTTPException(400);
+  }
+
+  return bytesRead === contentLength ? buffer : buffer.subarray(0, bytesRead);
 }
 
 // Forward a rewritten envelope to Sentry's ingest endpoint.
