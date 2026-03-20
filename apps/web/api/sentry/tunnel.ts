@@ -17,8 +17,13 @@ function parseUpstreamUrl(serverDsn: string): string {
     const url = new URL(serverDsn);
     const projectId = url.pathname.replaceAll("/", "");
 
-    return `https://${url.hostname}/api/${projectId}/envelope/`;
-  } catch {
+    if (!/^\d+$/.test(projectId)) {
+      throw new Error("Invalid project ID");
+    }
+
+    return `${url.protocol}//${url.host}/api/${projectId}/envelope/`;
+  } catch (error) {
+    if (error instanceof HTTPException) throw error;
     throw new HTTPException(500);
   }
 }
