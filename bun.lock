@@ -23,6 +23,7 @@
       "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
         "@sentry/cloudflare": "catalog:",
+        "@sentry/core": "catalog:",
         "@sentry/react": "catalog:",
         "@sentry/vite-plugin": "catalog:",
         "@tanstack/react-router": "catalog:",
@@ -62,6 +63,7 @@
     "@cloudflare/workers-types": "4.20260317.1",
     "@libsql/client": "0.17.0",
     "@sentry/cloudflare": "10.44.0",
+    "@sentry/core": "10.44.0",
     "@sentry/react": "10.44.0",
     "@sentry/vite-plugin": "5.1.1",
     "@tanstack/react-router": "1.167.4",

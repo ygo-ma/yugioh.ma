@@ -25,6 +25,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@sentry/cloudflare": "catalog:",
+    "@sentry/core": "catalog:",
     "@sentry/react": "catalog:",
     "@sentry/vite-plugin": "catalog:",
     "@tanstack/react-router": "catalog:",

@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/react";
 import type { getRouter } from "./router";
+import { CAPTURED } from "./middleware/sentry";
 
 export function initSentryClient(router: ReturnType<typeof getRouter>): void {
   if (router.isServer) return;
@@ -19,5 +20,17 @@ export function initSentryClient(router: ReturnType<typeof getRouter>): void {
     release: VITE_SENTRY_RELEASE,
     dist: VITE_SENTRY_DIST,
     integrations: [Sentry.tanstackRouterBrowserTracingIntegration(router)],
+
+    // Drop errors that were already captured server-side by the Sentry
+    // middleware in src/middleware/sentry.ts. The middleware's .client()
+    // handler marks these errors with a non-enumerable property before
+    // they reach the ErrorBoundary.
+    beforeSend(event, { originalException }) {
+      if (originalException instanceof Error && CAPTURED in originalException) {
+        return null;
+      }
+
+      return event;
+    },
   });
 }

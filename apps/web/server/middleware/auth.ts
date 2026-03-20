@@ -1,5 +1,5 @@
 import { defineEventHandler } from "nitro/h3";
-import type { CfBindings } from "../../api/db/types";
+import type { CfBindings } from "../types";
 
 export default defineEventHandler((event) => {
   if (event.url.pathname === "/api/health") {
