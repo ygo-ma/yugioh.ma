@@ -16,20 +16,29 @@ interface ValidationError {
 
 // Sentry envelopes are newline-delimited: the first line is a JSON header
 // containing the DSN the client used. Parse it out so we can validate it.
-function parseEnvelopeHeader(body: string): string | undefined {
-  const newlineIndex = body.indexOf("\n");
-  if (newlineIndex === -1) return undefined;
-
-  try {
-    const header: unknown = JSON.parse(body.slice(0, newlineIndex));
-    if (typeof header === "object" && header !== null && "dsn" in header) {
-      const { dsn } = header as { dsn: unknown };
-      return typeof dsn === "string" ? dsn : undefined;
-    }
-    return undefined;
-  } catch {
+// Only the header line is decoded as UTF-8 — the rest of the envelope may
+// contain binary payloads (e.g., attachments) that must not be re-encoded.
+function parseEnvelopeHeader(body: Uint8Array): string | undefined {
+  // Newline character
+  const newlineIndex = body.indexOf(0x0a);
+  if (newlineIndex === -1) {
     return undefined;
   }
+
+  try {
+    const headerLine = new TextDecoder().decode(body.subarray(0, newlineIndex));
+    const header: unknown = JSON.parse(headerLine);
+    if (typeof header === "object" && header !== null && "dsn" in header) {
+      const { dsn } = header as { dsn: unknown };
+      if (typeof dsn === "string") {
+        return dsn;
+      }
+    }
+  } catch {
+    // Invalid DSN or malformed JSON
+  }
+
+  return undefined;
 }
 
 // Prevent open-relay abuse: ensure the client-supplied DSN points to
@@ -75,9 +84,9 @@ export default defineEventHandler(async (event) => {
     throw HTTPError.status(404);
   }
 
-  // Read the raw envelope body from the client SDK
-  const body = await event.req.text();
-  if (!body) {
+  // Read the raw envelope as bytes to preserve binary payloads (attachments)
+  const body = new Uint8Array(await event.req.arrayBuffer());
+  if (body.length === 0) {
     throw HTTPError.status(400);
   }
 
