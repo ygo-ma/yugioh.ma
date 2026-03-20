@@ -60,9 +60,13 @@ const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
 // Browsers always send the Origin header on POST requests (Fetch spec),
 // so missing Origin means a non-browser caller (curl, scripts) — block it.
 function validateOrigin(origin: string | undefined, host: string): void {
-  if (!origin || new URL(origin).host !== host) {
-    throw new HTTPException(403);
+  try {
+    if (origin && new URL(origin).host === host) return;
+  } catch (error) {
+    // Nothing to do
   }
+
+  throw new HTTPException(403);
 }
 
 // Read one chunk from the stream into the buffer. Returns the new offset.
