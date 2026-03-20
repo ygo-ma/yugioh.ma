@@ -3,7 +3,7 @@ import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../db/types";
 
-export const sentryOnError: ErrorHandler<AppEnv> = (error, context) => {
+const sentryErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   if (error instanceof HTTPException) {
     if (error.status >= 500) {
       Sentry.captureException(error);
@@ -17,3 +17,5 @@ export const sentryOnError: ErrorHandler<AppEnv> = (error, context) => {
     500,
   );
 };
+
+export default sentryErrorHandler;

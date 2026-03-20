@@ -3,15 +3,16 @@
 // drop error reports. The client SDK is configured with `tunnel: "/api/sentry"`
 // which sends envelopes here instead of directly to Sentry's ingest.
 
-import { defineEventHandler, HTTPError } from "nitro/h3";
-import type { CfBindings } from "../db/types";
+import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
+import type { AppEnv } from "../db/types";
 
 interface UpstreamUrl {
   url: string;
 }
 
 interface ValidationError {
-  error: number;
+  error: 400 | 403;
 }
 
 // Sentry envelopes are newline-delimited: the first line is a JSON header
@@ -75,38 +76,39 @@ function validateAndBuildUpstreamUrl(
   };
 }
 
-export default defineEventHandler(async (event) => {
-  const cfEnv = event.runtime?.cloudflare?.env as CfBindings | undefined;
-  const dsn = cfEnv?.SENTRY_DSN ?? process.env.SENTRY_DSN;
+const tunnel = new Hono<AppEnv>();
+
+export default tunnel.post("/", async (context) => {
+  const dsn = context.env.SENTRY_DSN;
 
   // Tunnel is only active when Sentry is configured
   if (!dsn) {
-    throw HTTPError.status(404);
+    throw new HTTPException(404);
   }
 
   // Reject obviously oversized payloads before reading the body
   const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
-  const contentLength = Number(event.req.headers.get("content-length"));
+  const contentLength = Number(context.req.header("content-length"));
   if (contentLength > MAX_BODY_BYTES) {
-    throw HTTPError.status(413);
+    throw new HTTPException(413);
   }
 
   // Read the raw envelope as bytes to preserve binary payloads (attachments)
-  const body = new Uint8Array(await event.req.arrayBuffer());
+  const body = new Uint8Array(await context.req.arrayBuffer());
   if (body.length === 0 || body.length > MAX_BODY_BYTES) {
-    throw HTTPError.status(body.length === 0 ? 400 : 413);
+    throw new HTTPException(body.length === 0 ? 400 : 413);
   }
 
   // Extract the DSN the client claims to use
   const clientDsn = parseEnvelopeHeader(body);
   if (!clientDsn) {
-    throw HTTPError.status(400);
+    throw new HTTPException(400);
   }
 
   // Validate and build the upstream Sentry ingest URL
   const result = validateAndBuildUpstreamUrl(clientDsn, dsn);
   if ("error" in result) {
-    throw HTTPError.status(result.error);
+    throw new HTTPException(result.error);
   }
 
   // Forward the envelope as-is to Sentry
@@ -116,9 +118,13 @@ export default defineEventHandler(async (event) => {
       body,
       headers: { "Content-Type": "application/x-sentry-envelope" },
     });
-    event.res.status = response.status;
-    return "";
+
+    if (!response.ok) {
+      throw new HTTPException(502);
+    }
+
+    return context.body(null, 200);
   } catch {
-    throw HTTPError.status(502);
+    throw new HTTPException(502);
   }
 });

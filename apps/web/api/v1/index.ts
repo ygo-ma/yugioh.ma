@@ -1,14 +1,11 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../db/types";
-import { dbMiddleware } from "../db/index";
+import { dbMiddleware } from "../db";
 import { posts } from "../db/schema";
-import { sentryOnError } from "./sentry";
 
-const app = new Hono<AppEnv>().basePath("/api/v1");
+const v1 = new Hono<AppEnv>();
 
-app.onError(sentryOnError);
-
-export default app
+export default v1
   .use(dbMiddleware)
   .get("/posts", async (context) => {
     const db = context.var.db;

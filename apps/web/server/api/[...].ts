@@ -1,7 +1,7 @@
 import { wrapRequestHandler } from "@sentry/cloudflare";
 import { defineEventHandler } from "nitro/h3";
-import type { CfBindings } from "../../db/types";
-import app from "../../v1/app";
+import app from "../../api/app";
+import type { CfBindings } from "../../api/db/types";
 
 export default defineEventHandler((event) => {
   const cfEnv = event.runtime?.cloudflare?.env as CfBindings | undefined;
