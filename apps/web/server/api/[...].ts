@@ -8,7 +8,9 @@ export default defineEventHandler((event) => {
   const env = cfEnv ?? process.env;
   const dsn = env.SENTRY_DSN;
 
-  if (dsn && event.runtime?.cloudflare?.context) {
+  const context = event.runtime?.cloudflare?.context;
+
+  if (dsn && context) {
     const wrapperOptions = {
       options: {
         dsn,
@@ -17,12 +19,14 @@ export default defineEventHandler((event) => {
         dist: env.SENTRY_DIST,
       },
       request: event.req,
-      context: event.runtime.cloudflare.context,
+      context,
       captureErrors: true,
     };
 
-    return wrapRequestHandler(wrapperOptions, () => app.fetch(event.req, env));
+    return wrapRequestHandler(wrapperOptions, () =>
+      app.fetch(event.req, env, context),
+    );
   }
 
-  return app.fetch(event.req, env);
+  return app.fetch(event.req, env, context);
 });
