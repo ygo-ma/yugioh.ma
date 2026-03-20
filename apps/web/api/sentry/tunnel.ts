@@ -7,6 +7,7 @@
 // envelope header with the real server-side DSN before forwarding to Sentry.
 
 import { Hono } from "hono";
+import type { HonoRequest } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../db/types";
 
@@ -62,12 +63,12 @@ function rewriteEnvelope(body: Uint8Array, serverDsn: string): Uint8Array {
 const MAX_BODY_BYTES = 1024 * 1024; // 1 MB
 
 // Same-origin check: reject requests not originating from our own host.
-// Browsers always send the Origin header on POST requests (Fetch spec),
-// so missing Origin means a non-browser caller (curl, scripts) — block it.
-function validateOrigin(origin: string | undefined, host: string): void {
+function validateOrigin(req: HonoRequest): void {
   try {
+    const host = new URL(req.url).host;
+    const origin = req.header("origin");
     if (origin && new URL(origin).host === host) return;
-  } catch (error) {
+  } catch {
     // Nothing to do
   }
 
@@ -171,8 +172,7 @@ export default tunnel.post("/", async (context) => {
   }
 
   const upstreamUrl = parseUpstreamUrl(dsn);
-  const host = context.req.header("host") ?? new URL(context.req.url).host;
-  validateOrigin(context.req.header("origin"), host);
+  validateOrigin(context.req);
 
   const body = await readEnvelopeBody(context.req.raw);
   const rewritten = rewriteEnvelope(body, dsn);
