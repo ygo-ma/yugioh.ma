@@ -1,4 +1,0 @@
-{
-  "extends": "@ygoma/tsconfig/tsconfig.node.json",
-  "include": ["api", "server", "*.config.ts"]
-}

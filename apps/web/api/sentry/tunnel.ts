@@ -79,7 +79,7 @@ function validateOrigin(req: HonoRequest): void {
 // Loops until the buffer is full, the stream ends, or a chunk exceeds
 // the remaining space (in which case only the fitting portion is copied).
 async function readStreamChunk(
-  reader: ReadableStreamDefaultReader<Uint8Array>,
+  reader: Pick<ReadableStreamDefaultReader<Uint8Array>, "read">,
   buffer: Uint8Array,
   offset: number,
 ): Promise<number> {
@@ -122,8 +122,7 @@ async function readEnvelopeBody(raw: Request): Promise<Uint8Array> {
     throw new HTTPException(413);
   }
 
-  const reader: ReadableStreamDefaultReader<Uint8Array> | undefined =
-    raw.body?.getReader();
+  const reader = raw.body?.getReader();
   if (!reader) {
     throw new HTTPException(400);
   }

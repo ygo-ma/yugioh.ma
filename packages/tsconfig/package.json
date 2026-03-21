@@ -5,8 +5,10 @@
   "scripts": {
     "lint": "oxfmt -c ../../.oxfmtrc.json --check"
   },
+  "dependencies": {
+    "bun-types": "catalog:"
+  },
   "peerDependencies": {
-    "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
   }
