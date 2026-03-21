@@ -1,4 +1,4 @@
-name: Checks & Deploy Preview
+name: CI
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   preview:
-    name: Checks & Deploy Preview
+    name: Checks & Preview
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
