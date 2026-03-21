@@ -1,5 +1,5 @@
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
-import type { CfBindings } from "../../server/types";
+import type { CfBindings } from "../server/types";
 import type * as schema from "./schema";
 
 export type { CfBindings };

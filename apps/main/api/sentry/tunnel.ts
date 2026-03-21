@@ -9,7 +9,7 @@
 import { Hono } from "hono";
 import type { HonoRequest } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../db/types";
+import type { AppEnv } from "../../db/types";
 
 // Parse the server-side DSN to extract the upstream ingest URL.
 // DSN format: https://<key>@<host>/<project-id>

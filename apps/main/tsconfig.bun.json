@@ -1,4 +1,4 @@
 {
   "extends": "@ygoma/tsconfig/tsconfig.bun.json",
-  "include": ["api", "server", "*.config.ts"]
+  "include": ["api", "db", "server", "*.config.ts"]
 }

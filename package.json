@@ -13,14 +13,14 @@
     "lint:fix": "oxlint -c .oxlintrc.json --fix && oxfmt -c .oxfmtrc.json",
     "build": "turbo build",
     "dev": "turbo dev",
-    "db:generate": "bun run --filter '*/web' db:generate",
-    "db:migrate": "bun run --filter '*/web' db:migrate",
-    "db:seed": "bun run --filter '*/web' db:seed",
-    "db:reset": "bun run --filter '*/web' db:reset",
-    "cf:preview": "bun run --filter '*/web' cf:preview",
-    "cf:db:migrate": "bun run --filter '*/web' cf:db:migrate",
-    "cf:db:seed": "bun run --filter '*/web' cf:db:seed",
-    "cf:db:reset": "bun run --filter '*/web' cf:db:reset"
+    "db:generate": "bun run --filter '*/main' db:generate",
+    "db:migrate": "bun run --filter '*/main' db:migrate",
+    "db:seed": "bun run --filter '*/main' db:seed",
+    "db:reset": "bun run --filter '*/main' db:reset",
+    "cf:preview": "bun run --filter '*/main' cf:preview",
+    "cf:db:migrate": "bun run --filter '*/main' cf:db:migrate",
+    "cf:db:seed": "bun run --filter '*/main' cf:db:seed",
+    "cf:db:reset": "bun run --filter '*/main' cf:db:reset"
   },
   "devDependencies": {
     "husky": "catalog:",

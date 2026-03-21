@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/cloudflare";
 import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../db/types";
+import type { AppEnv } from "../../db/types";
 
 const sentryErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   // Enrich the Sentry scope

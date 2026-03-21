@@ -5,7 +5,7 @@ import * as schema from "./schema";
 
 const defaultPath = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../..",
+  "..",
   "sqlite.db",
 );
 
