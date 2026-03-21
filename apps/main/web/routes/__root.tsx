@@ -7,6 +7,7 @@ import {
 import * as Sentry from "@sentry/react";
 import type { ReactNode } from "react";
 import { ErrorFallback } from "~/components/error-fallback";
+import mainCss from "@ygoma/ui/main.css?inline";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,6 +16,7 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Yu-Gi-Oh! Morocco" },
     ],
+    styles: [{ children: mainCss }],
   }),
   component: RootComponent,
   notFoundComponent: () => <p>Page not found</p>,
