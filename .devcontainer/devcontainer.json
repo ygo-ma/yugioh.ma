@@ -14,7 +14,6 @@
         "oxc.oxc-vscode",
         "ryanluker.vscode-coverage-gutters",
         "tamasfe.even-better-toml",
-        "vitest.explorer",
         "vunguyentuan.vscode-postcss"
       ],
       "settings": {

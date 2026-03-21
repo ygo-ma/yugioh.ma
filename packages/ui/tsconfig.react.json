@@ -1,0 +1,8 @@
+{
+  "extends": "@ygoma/tsconfig/tsconfig.react.json",
+  "include": ["src", ".storybook/**/*"],
+  "exclude": [".storybook/main.ts"],
+  "compilerOptions": {
+    "types": ["vite/client", "@vitest/browser-playwright"]
+  }
+}

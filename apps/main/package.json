@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@libsql/client": "catalog:",
+    "@ygoma/ui": "workspace:*",
     "drizzle-orm": "catalog:",
     "hono": "catalog:"
   },
