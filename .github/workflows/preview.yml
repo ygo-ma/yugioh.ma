@@ -77,7 +77,7 @@ jobs:
             DB_ID="$EXISTING"
           else
             RESULT=$(bunx wrangler d1 create "$DB_NAME")
-            DB_ID=$(echo "$RESULT" | grep 'database_id' | sed 's/.*= "\(.*\)"/\1/')
+            DB_ID=$(echo "$RESULT" | sed -n '/{/,/}/p' | jq -r '.d1_databases[0].database_id')
             NEW_DB=true
           fi
 
