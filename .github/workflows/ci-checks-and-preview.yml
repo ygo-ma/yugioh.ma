@@ -68,7 +68,7 @@ jobs:
       - name: Setup D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         id: d1
-        working-directory: apps/web
+        working-directory: apps/main
         env:
           DB_NAME: ${{ steps.branch.outputs.db_name }}
         run: |
@@ -97,7 +97,7 @@ jobs:
 
       - name: Set runtime vars
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        working-directory: apps/web
+        working-directory: apps/main
         env:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
@@ -116,7 +116,7 @@ jobs:
 
       - name: Build
         # Note: this should happen after any step that changes wrangler.json
-        working-directory: apps/web
+        working-directory: apps/main
         env:
           VITE_SENTRY_ENABLED: ${{ secrets.SENTRY_DSN != '' && 'true' || '' }}
           VITE_SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
@@ -129,7 +129,7 @@ jobs:
 
       - name: Set Pages secrets
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        working-directory: apps/web
+        working-directory: apps/main
         run: |
           for ENV in preview production; do
             echo "${{ secrets.SENTRY_DSN }}" | bunx wrangler pages secret put SENTRY_DSN --project-name=${{ env.STAGING_PROJECT_NAME }} --env $ENV
@@ -141,7 +141,7 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           wranglerVersion: "4.75.0"
-          workingDirectory: apps/web
+          workingDirectory: apps/main
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           command: >-

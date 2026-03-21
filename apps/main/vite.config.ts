@@ -12,7 +12,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [
-    tanstackStart({ srcDirectory: "src" }),
+    tanstackStart({ srcDirectory: "web" }),
     viteReact(),
     nitro({
       serverDir: "./server",

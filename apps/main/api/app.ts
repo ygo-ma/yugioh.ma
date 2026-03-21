@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv } from "./db/types";
+import type { AppEnv } from "../db/types";
 import health from "./health";
 import sentryErrorHandler from "./sentry/error-handler";
 import sentryTunnel from "./sentry/tunnel";

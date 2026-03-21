@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../db/types";
-import { dbMiddleware } from "../db";
-import { posts } from "../db/schema";
+import type { AppEnv } from "../../db/types";
+import { dbMiddleware } from "../../db";
+import { posts } from "../../db/schema";
 
 const v1 = new Hono<AppEnv>();
 

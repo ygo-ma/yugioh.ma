@@ -1,10 +1,10 @@
 {
   "extends": "@ygoma/tsconfig/tsconfig.react.json",
-  "include": ["src"],
+  "include": ["web"],
   "compilerOptions": {
     "types": ["vite/client"],
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./web/*"]
     }
   }
 }

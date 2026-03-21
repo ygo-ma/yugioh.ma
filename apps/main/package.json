@@ -1,5 +1,5 @@
 {
-  "name": "@ygoma/web",
+  "name": "@ygoma/main",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "cf:db:reset": "rimraf .wrangler/state && bun cf:db:migrate && bun cf:db:seed",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "bun api/db/seed.ts",
+    "db:seed": "bun db/seed.ts",
     "db:reset": "rimraf sqlite.db && bun db:migrate && bun db:seed",
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
