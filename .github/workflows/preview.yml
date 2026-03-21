@@ -140,6 +140,7 @@ jobs:
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
+          wranglerVersion: "4.75.0"
           workingDirectory: apps/web
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
