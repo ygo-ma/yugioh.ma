@@ -12,6 +12,9 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**/*.{ts,tsx}",
+        "server/**/*.ts",
+        "api/**/*.ts",
+        "drizzle/**/*.{json,sql}",
         "*.json",
         ".gitignore",
         "$TURBO_ROOT$/.gitignore",
@@ -28,6 +31,7 @@
         "src/**/*.{ts,tsx}",
         "!src/**/*.test.{ts,tsx}",
         "server/**/*.ts",
+        "api/**/*.ts",
         "vite.config.ts",
         "tsconfig.json",
         "tsconfig.*.json",

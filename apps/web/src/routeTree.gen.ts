@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SentryTestIndexRouteImport } from './routes/sentry-test/index'
+import { Route as SentryTestSsrErrorRouteImport } from './routes/sentry-test/ssr-error'
 import { Route as SentryTestErrorRouteImport } from './routes/sentry-test/error'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const SentryTestIndexRoute = SentryTestIndexRouteImport.update({
   path: '/sentry-test/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SentryTestSsrErrorRoute = SentryTestSsrErrorRouteImport.update({
+  id: '/sentry-test/ssr-error',
+  path: '/sentry-test/ssr-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SentryTestErrorRoute = SentryTestErrorRouteImport.update({
   id: '/sentry-test/error',
   path: '/sentry-test/error',
@@ -32,30 +38,43 @@ const SentryTestErrorRoute = SentryTestErrorRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test/': typeof SentryTestIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test': typeof SentryTestIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
+  '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test/': typeof SentryTestIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sentry-test/error' | '/sentry-test/'
+  fullPaths:
+    | '/'
+    | '/sentry-test/error'
+    | '/sentry-test/ssr-error'
+    | '/sentry-test/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sentry-test/error' | '/sentry-test'
-  id: '__root__' | '/' | '/sentry-test/error' | '/sentry-test/'
+  to: '/' | '/sentry-test/error' | '/sentry-test/ssr-error' | '/sentry-test'
+  id:
+    | '__root__'
+    | '/'
+    | '/sentry-test/error'
+    | '/sentry-test/ssr-error'
+    | '/sentry-test/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SentryTestErrorRoute: typeof SentryTestErrorRoute
+  SentryTestSsrErrorRoute: typeof SentryTestSsrErrorRoute
   SentryTestIndexRoute: typeof SentryTestIndexRoute
 }
 
@@ -75,6 +94,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SentryTestIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sentry-test/ssr-error': {
+      id: '/sentry-test/ssr-error'
+      path: '/sentry-test/ssr-error'
+      fullPath: '/sentry-test/ssr-error'
+      preLoaderRoute: typeof SentryTestSsrErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sentry-test/error': {
       id: '/sentry-test/error'
       path: '/sentry-test/error'
@@ -88,6 +114,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SentryTestErrorRoute: SentryTestErrorRoute,
+  SentryTestSsrErrorRoute: SentryTestSsrErrorRoute,
   SentryTestIndexRoute: SentryTestIndexRoute,
 }
 export const routeTree = rootRouteImport
@@ -95,10 +122,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

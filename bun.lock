@@ -22,6 +22,8 @@
       },
       "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
+        "@sentry/cloudflare": "catalog:",
+        "@sentry/core": "catalog:",
         "@sentry/react": "catalog:",
         "@sentry/vite-plugin": "catalog:",
         "@tanstack/react-router": "catalog:",
@@ -60,6 +62,8 @@
   "catalog": {
     "@cloudflare/workers-types": "4.20260317.1",
     "@libsql/client": "0.17.0",
+    "@sentry/cloudflare": "10.44.0",
+    "@sentry/core": "10.44.0",
     "@sentry/react": "10.44.0",
     "@sentry/vite-plugin": "5.1.1",
     "@tanstack/react-router": "1.167.4",
@@ -303,6 +307,8 @@
 
     "@oozcitak/util": ["@oozcitak/util@10.0.0", "", {}, "sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA=="],
 
+    "@opentelemetry/api": ["@opentelemetry/api@1.9.0", "", {}, "sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg=="],
+
     "@oxc-project/runtime": ["@oxc-project/runtime@0.115.0", "", {}, "sha512-Rg8Wlt5dCbXhQnsXPrkOjL1DTSvXLgb2R/KYfnf1/K+R0k6UMLEmbQXPM+kwrWqSmWA2t0B1EtHy2/3zikQpvQ=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.115.0", "", {}, "sha512-4n91DKnebUS4yjUHl2g3/b2T+IUdCfmoZGhmwsovZCDaJSs+QkVAM+0AqqTxHSsHfeiMuueT75cZaZcT/m0pSw=="],
@@ -514,6 +520,8 @@
     "@sentry/cli-win32-i686": ["@sentry/cli-win32-i686@2.58.5", "", { "os": "win32", "cpu": "ia32" }, "sha512-EsuboLSOnlrN7MMPJ1eFvfMDm+BnzOaSWl8eYhNo8W/BIrmNgpRUdBwnWn9Q2UOjJj5ZopukmsiMYtU/D7ml9g=="],
 
     "@sentry/cli-win32-x64": ["@sentry/cli-win32-x64@2.58.5", "", { "os": "win32", "cpu": "x64" }, "sha512-IZf+XIMiQwj+5NzqbOQfywlOitmCV424Vtf9c+ep61AaVScUFD1TSrQbOcJJv5xGxhlxNOMNgMeZhdexdzrKZg=="],
+
+    "@sentry/cloudflare": ["@sentry/cloudflare@10.44.0", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@sentry/core": "10.44.0" }, "peerDependencies": { "@cloudflare/workers-types": "^4.x" }, "optionalPeers": ["@cloudflare/workers-types"] }, "sha512-EiGpc45U3v3Xdf+7CDe2LCfAK6fmoD3uJgX8eZYBpRWrmM3YyH2p/slKBzTU61HBmtI1kv/77QB91r667RlMOA=="],
 
     "@sentry/core": ["@sentry/core@10.44.0", "", {}, "sha512-aa7CiDaNFZvHpqd97LJhuskolfJ/4IH5xyuVVLnv7l6B0v9KTwskPUxb0tH1ej3FxuzfH+i8iTiTFuqpfHS3QA=="],
 

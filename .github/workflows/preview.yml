@@ -35,7 +35,7 @@ jobs:
       - name: Lint
         run: bun lint
 
-      - name: Set branch slug
+      - name: Prepare variables
         id: branch
         env:
           SLUG: ${{ github.head_ref || github.ref_name }}
@@ -54,9 +54,16 @@ jobs:
             echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
           fi
 
+          VERSION=$(jq -r .version package.json)
+          SHORT_SHA=${GITHUB_SHA::7}
+          SENTRY_ENV=${{ github.event_name == 'push' && 'staging' || 'preview' }}
+
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
-          echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          echo "version=$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sentry_environment=$SENTRY_ENV" >> "$GITHUB_OUTPUT"
+          echo "sentry_release=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sentry_dist=$SENTRY_ENV-$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Setup D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -74,9 +81,13 @@ jobs:
             NEW_DB=true
           fi
 
-          echo "Updating wrangler.toml with database $DB_NAME (ID: $DB_ID)"
-          sed -i "s/^database_name = .*/database_name = \"$DB_NAME\"/" wrangler.toml
-          sed -i "s/^database_id = .*/database_id = \"$DB_ID\"/" wrangler.toml
+          echo "Updating wrangler.json with database $DB_NAME (ID: $DB_ID)"
+
+          jq --arg db_name "$DB_NAME" --arg db_id "$DB_ID" \
+            '.d1_databases[0].database_name = $db_name |
+             .d1_databases[0].database_id = $db_id' \
+            wrangler.json > wrangler.json.tmp
+          mv wrangler.json.tmp wrangler.json
 
           bunx wrangler d1 migrations apply "$DB_NAME" --remote
 
@@ -84,17 +95,45 @@ jobs:
             bunx wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
           fi
 
-      - name: Build
+      - name: Set runtime vars
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         working-directory: apps/web
         env:
-          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
-          VITE_SENTRY_ENVIRONMENT: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
-          VITE_SENTRY_RELEASE: ${{ steps.branch.outputs.version }}
-          VITE_SENTRY_DIST: ${{ github.event_name == 'push' && 'staging' || 'preview' }}-${{ steps.branch.outputs.short_sha }}
+          SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
+          SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
+          SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
+        run: |
+          jq --arg env "$SENTRY_ENVIRONMENT" \
+            --arg rel "$SENTRY_RELEASE" \
+            --arg dist "$SENTRY_DIST" \
+            '.vars.SENTRY_ENVIRONMENT = $env |
+             .vars.SENTRY_RELEASE = $rel |
+             .vars.SENTRY_DIST = $dist' \
+            wrangler.json > wrangler.json.tmp
+          mv wrangler.json.tmp wrangler.json
+
+          cat wrangler.json
+
+      - name: Build
+        # Note: this should happen after any step that changes wrangler.json
+        working-directory: apps/web
+        env:
+          VITE_SENTRY_ENABLED: ${{ secrets.SENTRY_DSN != '' && 'true' || '' }}
+          VITE_SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
+          VITE_SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
+          VITE_SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bun run build:preview
+
+      - name: Set Pages secrets
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        working-directory: apps/web
+        run: |
+          for ENV in preview production; do
+            echo "${{ secrets.SENTRY_DSN }}" | bunx wrangler pages secret put SENTRY_DSN --project-name=${{ env.STAGING_PROJECT_NAME }} --env $ENV
+          done
 
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''

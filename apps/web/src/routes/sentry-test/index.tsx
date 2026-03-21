@@ -1,5 +1,10 @@
 import * as Sentry from "@sentry/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+
+const throwFormActionError = createServerFn({ method: "POST" }).handler(() => {
+  throw new Error("Sentry test: form action error");
+});
 
 export const Route = createFileRoute("/sentry-test/")({
   component: SentryTest,
@@ -15,6 +20,11 @@ function handleUnhandledRejection() {
 
 function handleCaptureMessage() {
   Sentry.captureMessage("Manual test message from /sentry-test");
+}
+
+async function handleApiError() {
+  const response = await fetch("/api/v1/sentry-test");
+  console.log("API error response:", response.status, await response.text());
 }
 
 function handleBreadcrumbError() {
@@ -35,6 +45,9 @@ function SentryTest() {
           <Link to="/sentry-test/error">Route that throws on render</Link>
         </li>
         <li>
+          <Link to="/sentry-test/ssr-error">SSR loader error</Link>
+        </li>
+        <li>
           <button type="button" onClick={handleClickError}>
             Throw error on click
           </button>
@@ -50,9 +63,19 @@ function SentryTest() {
           </button>
         </li>
         <li>
+          <button type="button" onClick={() => void handleApiError()}>
+            Trigger API error (GET /api/v1/sentry-test)
+          </button>
+        </li>
+        <li>
           <button type="button" onClick={handleBreadcrumbError}>
             Error with breadcrumbs
           </button>
+        </li>
+        <li>
+          <form method="post" action={throwFormActionError.url}>
+            <button type="submit">Form action error (no JS needed)</button>
+          </form>
         </li>
       </ul>
     </main>

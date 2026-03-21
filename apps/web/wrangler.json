@@ -1,0 +1,17 @@
+{
+  "name": "ygoma",
+  "compatibility_date": "2026-03-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist",
+  "dev": {
+    "ip": "0.0.0.0"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dev",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}
