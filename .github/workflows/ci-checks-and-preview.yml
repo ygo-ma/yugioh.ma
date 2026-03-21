@@ -35,6 +35,15 @@ jobs:
       - name: Lint
         run: bun lint
 
+      - name: Test
+        run: bun test:cov
+
+      - name: Upload coverage
+        if: env.CODECOV_TOKEN != ''
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Prepare variables
         id: branch
         env:
