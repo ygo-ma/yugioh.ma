@@ -17,7 +17,7 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
-    "classnames": "^2.5.1"
+    "classnames": "catalog:"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "catalog:",
