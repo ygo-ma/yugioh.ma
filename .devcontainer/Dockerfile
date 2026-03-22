@@ -23,6 +23,9 @@ USER $USER
 # Remove sudo note on login
 RUN touch /home/$USER/.sudo_as_admin_successful
 
+# Install Playwright chromium and its system dependencies
+RUN bunx playwright install chromium --with-deps
+
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer
 RUN [ ! -f /tmp/.devcontainer/user/build.sh ] \

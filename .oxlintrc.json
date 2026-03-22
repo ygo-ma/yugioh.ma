@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "ignorePatterns": ["**/routeTree.gen.ts", "**/.turbo/", "**/node_modules/"],
+  "ignorePatterns": ["**/routeTree.gen.ts", ".turbo", "node_modules"],
   "env": {
     "node": true,
     "browser": true

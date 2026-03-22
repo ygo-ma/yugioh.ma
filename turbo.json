@@ -6,16 +6,18 @@
       "cache": false,
       "persistent": true
     },
+    "storybook": {
+      "cache": false,
+      "persistent": true
+    },
     "lint": {
       "dependsOn": ["^build"],
       "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "web/**/*.{ts,tsx}",
-        "server/**/*.ts",
-        "api/**/*.ts",
-        "db/**/*.ts",
+        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
         "db/migrations/**/*.{json,sql}",
+        ".storybook/**",
         "*.json",
         ".gitignore",
         "$TURBO_ROOT$/.gitignore",
@@ -24,16 +26,44 @@
         "$TURBO_ROOT$/.oxlintrc.json"
       ]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputLogs": "new-only",
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
+        ".storybook/**",
+        "vite.config.ts",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        ".gitignore",
+        "$TURBO_ROOT$/.gitignore",
+        "$TURBO_ROOT$/package.json"
+      ]
+    },
+    "test:cov": {
+      "dependsOn": ["^build"],
+      "outputLogs": "new-only",
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
+        ".storybook/**",
+        "vite.config.ts",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        ".gitignore",
+        "$TURBO_ROOT$/.gitignore",
+        "$TURBO_ROOT$/package.json"
+      ],
+      "outputs": ["coverage/**/*"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "web/**/*.{ts,tsx}",
-        "!web/**/*.test.{ts,tsx}",
-        "server/**/*.ts",
-        "api/**/*.ts",
-        "db/**/*.ts",
+        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
+        "!{src,web,api,server,db}/**/*.{test,stories}.{ts,tsx}",
         "vite.config.ts",
         "tsconfig.json",
         "tsconfig.*.json",
