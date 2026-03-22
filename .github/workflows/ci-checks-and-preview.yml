@@ -11,18 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.event_name == 'push' && 'staging' || 'preview' }}
-      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_DEFAULT_URL }}
+      url: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_URL || steps.deploy.outputs.pages-deployment-url }}
     permissions:
       contents: read
       pull-requests: write
     env:
       TURBO_TELEMETRY_DISABLED: 1
-      STAGING_PROJECT_NAME: ygoma-staging
-      STAGING_DB_NAME: ygoma-staging
-      PREVIEW_DB_PREFIX: ygoma-preview
+      PROJECT_NAME: ${{ vars.PROJECT_NAME || github.event.repository.name }}
+      STAGING_URL: ${{ vars.STAGING_URL }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      STAGING_DEFAULT_URL: https://staging.yugioh.ma
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -40,25 +38,28 @@ jobs:
         env:
           SLUG: ${{ github.head_ref || github.ref_name }}
         run: |
-          # Replace non-alphanumeric characters with dashes,
-          # collapse multiple dashes, and trim leading/trailing dashes.
-          # If the result is empty, use "pr-<number>" as a fallback.
-          SLUG=$(echo -n "$SLUG" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
-          if [ -z "$SLUG" ]; then
-            SLUG="pr-${{ github.event.pull_request.number }}"
+          # Slugify: replace non-alphanumeric with dashes, collapse, trim.
+          slugify() { echo -n "$1" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'; }
+
+          PROJECT_SLUG=$(slugify "$PROJECT_NAME")
+          BRANCH_SLUG=$(slugify "$SLUG")
+          if [ -z "$BRANCH_SLUG" ]; then
+            BRANCH_SLUG="pr-${{ github.event.pull_request.number }}"
           fi
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
-            echo "db_name=$STAGING_DB_NAME" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PROJECT_SLUG-staging" >> "$GITHUB_OUTPUT"
           else
-            echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
           fi
+
+          echo "project_slug=$PROJECT_SLUG" >> "$GITHUB_OUTPUT"
 
           VERSION=$(jq -r .version package.json)
           SHORT_SHA=${GITHUB_SHA::7}
           SENTRY_ENV=${{ github.event_name == 'push' && 'staging' || 'preview' }}
 
-          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+          echo "branch_slug=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sentry_environment=$SENTRY_ENV" >> "$GITHUB_OUTPUT"
@@ -68,7 +69,7 @@ jobs:
       - name: Setup D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         id: d1
-        working-directory: apps/main
+        working-directory: packages/app
         env:
           DB_NAME: ${{ steps.branch.outputs.db_name }}
         run: |
@@ -97,7 +98,7 @@ jobs:
 
       - name: Set runtime vars
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        working-directory: apps/main
+        working-directory: packages/app
         env:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
@@ -116,24 +117,16 @@ jobs:
 
       - name: Build
         # Note: this should happen after any step that changes wrangler.json
-        working-directory: apps/main
+        working-directory: packages/app
         env:
-          VITE_SENTRY_ENABLED: ${{ secrets.SENTRY_DSN != '' && 'true' || '' }}
-          VITE_SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
-          VITE_SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
-          VITE_SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
+          SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
+          SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bun run build:preview
-
-      - name: Set Pages secrets
-        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        working-directory: apps/main
-        run: |
-          for ENV in preview production; do
-            echo "${{ secrets.SENTRY_DSN }}" | bunx wrangler pages secret put SENTRY_DSN --project-name=${{ env.STAGING_PROJECT_NAME }} --env $ENV
-          done
 
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -141,17 +134,25 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           wranglerVersion: "4.75.0"
-          workingDirectory: apps/main
+          workingDirectory: packages/app
           apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           command: >-
             pages deploy dist
-            --project-name=${{ env.STAGING_PROJECT_NAME }}
+            --project-name=${{ steps.branch.outputs.project_slug }}-staging
             --branch=${{ github.head_ref || github.ref_name }}
+
+      - name: Set Pages secrets
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        working-directory: packages/app
+        run: |
+          for ENV in preview production; do
+            echo "${{ secrets.SENTRY_DSN }}" | bunx wrangler pages secret put SENTRY_DSN --project-name=${{ steps.branch.outputs.project_slug }}-staging --env $ENV
+          done
 
       - name: Health check
         if: steps.deploy.outcome == 'success'
         env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_DEFAULT_URL }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_URL || steps.deploy.outputs.pages-deployment-url }}
         run: |
           curl -fsSL --retry 5 --retry-delay 5 --retry-all-errors "$DEPLOY_URL/api/health"

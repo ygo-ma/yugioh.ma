@@ -1,5 +1,5 @@
 {
-  "name": "@ygoma/main",
+  "name": "@acme/app",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -23,6 +23,7 @@
     "hono": "catalog:"
   },
   "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:",
     "@sentry/cloudflare": "catalog:",
     "@sentry/core": "catalog:",
@@ -33,7 +34,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "@ygoma/tsconfig": "workspace:*",
     "bun-types": "catalog:",
     "drizzle-kit": "catalog:",
     "nitro": "catalog:",

@@ -4,9 +4,17 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
+const env = process.env;
+
+// Match the backend's environment variables
+env.VITE_SENTRY_ENABLED = env.SENTRY_DSN;
+env.VITE_SENTRY_ENVIRONMENT = env.SENTRY_ENVIRONMENT;
+env.VITE_SENTRY_RELEASE = env.SENTRY_RELEASE;
+env.VITE_SENTRY_DIST = env.SENTRY_DIST;
+
 export default defineConfig({
   build: {
-    sourcemap: process.env.SENTRY_AUTH_TOKEN ? "hidden" : false,
+    sourcemap: env.SENTRY_AUTH_TOKEN ? "hidden" : false,
   },
   resolve: {
     tsconfigPaths: true,
@@ -19,18 +27,18 @@ export default defineConfig({
       errorHandler: "./server/error.ts",
     }),
     sentryVitePlugin({
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: env.SENTRY_ORG,
+      project: env.SENTRY_PROJECT,
+      authToken: env.SENTRY_AUTH_TOKEN,
       release: {
-        name: process.env.VITE_SENTRY_RELEASE,
-        dist: process.env.VITE_SENTRY_DIST,
+        name: env.SENTRY_RELEASE,
+        dist: env.SENTRY_DIST,
         setCommits: { auto: true },
       },
       sourcemaps: {
         filesToDeleteAfterUpload: ["./dist/**/*.map"],
       },
-      disable: !process.env.SENTRY_AUTH_TOKEN,
+      disable: !env.SENTRY_AUTH_TOKEN,
     }),
   ],
 });
