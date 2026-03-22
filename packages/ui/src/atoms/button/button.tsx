@@ -23,6 +23,9 @@ export type ButtonProps = Pick<
   size?: ButtonSize;
 };
 
+/**
+ * Placeholder component for testing only
+ */
 export function Button({
   variant = "primary",
   size = "md",
