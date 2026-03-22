@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: bun lint
 
+      - name: Install Playwright
+        run: bun playwright:install
+
       - name: Test
         run: bun test:cov
 

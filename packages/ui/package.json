@@ -9,7 +9,6 @@
     "./main.css": "./src/main.css"
   },
   "scripts": {
-    "prepare": "playwright install chromium --with-deps",
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
