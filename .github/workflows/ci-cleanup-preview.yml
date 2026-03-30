@@ -9,7 +9,7 @@ jobs:
     name: Preview Cleanup
     runs-on: ubuntu-latest
     environment: preview
-    continues-on-error: true
+    continue-on-error: true
     env:
       PREVIEW_DB_PREFIX: ygoma-preview
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
