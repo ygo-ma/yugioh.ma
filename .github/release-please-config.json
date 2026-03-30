@@ -17,8 +17,8 @@
     ".": {
       "component": "workspace"
     },
-    "apps/main": {
-      "component": "main"
+    "packages/app": {
+      "component": "app"
     }
   }
 }

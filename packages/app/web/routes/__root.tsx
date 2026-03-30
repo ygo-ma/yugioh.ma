@@ -7,14 +7,14 @@ import {
 import * as Sentry from "@sentry/react";
 import type { ReactNode } from "react";
 import { ErrorFallback } from "~/components/error-fallback";
-import mainCss from "@ygoma/ui/main.css?inline";
+import mainCss from "@acme/ui/main.css?inline";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Yu-Gi-Oh! Morocco" },
+      { title: "Acme App" },
     ],
     styles: [{ children: mainCss }],
   }),

@@ -1,5 +1,5 @@
 {
-  "name": "@ygoma/ui",
+  "name": "@acme/ui",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -19,6 +19,7 @@
     "classnames": "catalog:"
   },
   "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-vitest": "catalog:",
@@ -28,7 +29,6 @@
     "@types/react-dom": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "@ygoma/tsconfig": "workspace:*",
     "bun-types": "catalog:",
     "playwright": "catalog:",
     "react": "catalog:",

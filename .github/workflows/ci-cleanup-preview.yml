@@ -11,7 +11,7 @@ jobs:
     environment: preview
     continue-on-error: true
     env:
-      PREVIEW_DB_PREFIX: ygoma-preview
+      PROJECT_NAME: ${{ vars.PROJECT_NAME || github.event.repository.name }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
@@ -21,14 +21,15 @@ jobs:
         env:
           SLUG: ${{ github.head_ref }}
         run: |
-          # Replace non-alphanumeric characters with dashes,
-          # collapse multiple dashes, and trim leading/trailing dashes.
-          # If the result is empty, use "pr-<number>" as a fallback.
-          SLUG=$(echo -n "$SLUG" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
-          if [ -z "$SLUG" ]; then
-            SLUG="pr-${{ github.event.pull_request.number }}"
+          # Slugify: replace non-alphanumeric with dashes, collapse, trim.
+          slugify() { echo -n "$1" | sed 's/[^a-zA-Z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//'; }
+
+          PROJECT_SLUG=$(slugify "$PROJECT_NAME")
+          BRANCH_SLUG=$(slugify "$SLUG")
+          if [ -z "$BRANCH_SLUG" ]; then
+            BRANCH_SLUG="pr-${{ github.event.pull_request.number }}"
           fi
-          echo "db_name=$PREVIEW_DB_PREFIX-$SLUG" >> "$GITHUB_OUTPUT"
+          echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
 
       - name: Delete D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''

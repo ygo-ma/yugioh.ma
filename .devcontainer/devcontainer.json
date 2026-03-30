@@ -2,7 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
-  "name": "ygoma",
+  "name": "acme",
   "dockerComposeFile": ["compose.yaml"],
   "remoteUser": "dev",
   "containerUser": "dev",

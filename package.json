@@ -1,10 +1,9 @@
 {
-  "name": "@ygoma/workspace",
+  "name": "@acme/workspace",
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "apps/*"
+    "packages/*"
   ],
   "type": "module",
   "scripts": {
@@ -16,14 +15,14 @@
     "test:cov": "turbo test:cov",
     "dev": "turbo dev",
     "playwright:install": "playwright install chromium --with-deps",
-    "db:generate": "bun run --filter '*/main' db:generate",
-    "db:migrate": "bun run --filter '*/main' db:migrate",
-    "db:seed": "bun run --filter '*/main' db:seed",
-    "db:reset": "bun run --filter '*/main' db:reset",
-    "cf:preview": "bun run --filter '*/main' cf:preview",
-    "cf:db:migrate": "bun run --filter '*/main' cf:db:migrate",
-    "cf:db:seed": "bun run --filter '*/main' cf:db:seed",
-    "cf:db:reset": "bun run --filter '*/main' cf:db:reset"
+    "db:generate": "bun run --filter '*/app' db:generate",
+    "db:migrate": "bun run --filter '*/app' db:migrate",
+    "db:seed": "bun run --filter '*/app' db:seed",
+    "db:reset": "bun run --filter '*/app' db:reset",
+    "cf:preview": "bun run --filter '*/app' cf:preview",
+    "cf:db:migrate": "bun run --filter '*/app' cf:db:migrate",
+    "cf:db:seed": "bun run --filter '*/app' cf:db:seed",
+    "cf:db:reset": "bun run --filter '*/app' cf:db:reset"
   },
   "devDependencies": {
     "husky": "catalog:",

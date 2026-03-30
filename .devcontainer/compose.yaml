@@ -1,4 +1,4 @@
-name: "ygoma"
+name: "acme"
 
 services:
   dev:
