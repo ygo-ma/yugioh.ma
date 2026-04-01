@@ -19,6 +19,7 @@
     "db:migrate": "bun run --filter '*/app' db:migrate",
     "db:seed": "bun run --filter '*/app' db:seed",
     "db:reset": "bun run --filter '*/app' db:reset",
+    "storybook": "bun run --filter '*/ui' storybook",
     "cf:preview": "bun run --filter '*/app' cf:preview",
     "cf:db:migrate": "bun run --filter '*/app' cf:db:migrate",
     "cf:db:seed": "bun run --filter '*/app' cf:db:seed",

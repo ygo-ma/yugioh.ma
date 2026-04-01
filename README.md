@@ -33,6 +33,7 @@ A devcontainer config is included for VS Code / GitHub Codespaces.
 | `bun db:migrate`  | Apply migrations locally             |
 | `bun db:seed`     | Seed the local database              |
 | `bun db:reset`    | Drop and recreate the local database |
+| `bun storybook`   | Run Storybook at `localhost:6006`    |
 
 ## Deployment
 
