@@ -125,7 +125,9 @@ Set in **Settings → Secrets and variables → Actions**.
 
 - `SENTRY_DSN` — Ingest URL, injected at build time and set as a Pages secret.
 - `SENTRY_ORG` — Organization slug (source map upload).
+  Defaults to the slugified GitHub repository owner.
 - `SENTRY_PROJECT` — Project slug (source map upload).
+  Defaults to the slugified `PROJECT_NAME`.
 - `SENTRY_AUTH_TOKEN` — API token (source map upload).
 
 **Repository secrets — coverage** (optional):

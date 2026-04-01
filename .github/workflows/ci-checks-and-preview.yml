@@ -65,7 +65,9 @@ jobs:
             echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
           fi
 
+          OWNER_SLUG=$(slugify "${{ github.repository_owner }}")
           echo "project_slug=$PROJECT_SLUG" >> "$GITHUB_OUTPUT"
+          echo "owner_slug=$OWNER_SLUG" >> "$GITHUB_OUTPUT"
 
           VERSION=$(jq -r .version package.json)
           SHORT_SHA=${GITHUB_SHA::7}
@@ -135,8 +137,8 @@ jobs:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
           SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG || steps.branch.outputs.owner_slug }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT || steps.branch.outputs.project_slug }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: bun run build:preview
 
