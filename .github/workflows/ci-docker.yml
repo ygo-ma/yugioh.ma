@@ -1,0 +1,28 @@
+name: Docker
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    name: Build & Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build image
+        run: docker build -t acme .
+
+      - name: Start container
+        run: docker run -d --name acme -p 3000:3000 acme
+
+      - name: Health check
+        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors http://localhost:3000/api/health
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f acme
