@@ -1,19 +1,20 @@
-FROM node:24-trixie
+FROM node:24.14.0
 
 # Enable corepack for pnpm
 RUN corepack enable
 
 # Install basic dev tools and setup locale
 RUN apt update -y \
-    && apt install -y sudo curl locales build-essential git \
-    && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
-    && locale-gen \
-    && rm -rf /var/lib/apt/lists/*
+  && apt install -y sudo curl locales build-essential git \
+  && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
+  && locale-gen \
+  && rm -rf /var/lib/apt/lists/*
 
 # Create the dev user and have him sudo without password
 ENV USER=dev
-RUN useradd -mG sudo -s /bin/bash $USER \
-    && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
+RUN userdel node \
+  && useradd -mG sudo -s /bin/bash $USER \
+  && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
 # Switch to default user
 USER $USER
@@ -23,6 +24,10 @@ RUN touch /home/$USER/.sudo_as_admin_successful
 
 # Install Playwright chromium and its system dependencies
 RUN npx playwright install chromium --with-deps
+
+# Install pnpm
+COPY package.json /tmp/workspace/package.json
+RUN cd /tmp/workspace && corepack install
 
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer
