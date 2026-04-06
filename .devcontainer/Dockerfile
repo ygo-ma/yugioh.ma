@@ -1,4 +1,7 @@
-FROM oven/bun:1.3.11
+FROM node:24-trixie
+
+# Enable corepack for pnpm
+RUN corepack enable
 
 # Install basic dev tools and setup locale
 RUN apt update -y \
@@ -9,8 +12,7 @@ RUN apt update -y \
 
 # Create the dev user and have him sudo without password
 ENV USER=dev
-RUN userdel bun \
-    && useradd -mG sudo -s /bin/bash $USER \
+RUN useradd -mG sudo -s /bin/bash $USER \
     && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USER
 
 # Switch to default user
@@ -20,7 +22,7 @@ USER $USER
 RUN touch /home/$USER/.sudo_as_admin_successful
 
 # Install Playwright chromium and its system dependencies
-RUN bunx playwright install chromium --with-deps
+RUN npx playwright install chromium --with-deps
 
 # Run build-time user setup script if there's any
 COPY --chown=$USER:$USER .devcontainer /tmp/.devcontainer

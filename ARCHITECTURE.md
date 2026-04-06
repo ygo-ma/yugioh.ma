@@ -2,9 +2,10 @@
 
 ## Stack
 
-Bun monorepo with TanStack Start (SSR + SPA), Hono API, Drizzle ORM,
-and Nitro as the server layer. Cloudflare Pages for deployment, with
-Docker as an alternative target. All packages live under `packages/`.
+Node + pnpm monorepo with TanStack Start (SSR + SPA), Hono API,
+Drizzle ORM, and Nitro as the server layer. Cloudflare Pages for
+deployment, with Docker as an alternative target. All packages live
+under `packages/`.
 
 ## Directory Layout
 
@@ -157,4 +158,4 @@ script to replace them:
 ```
 
 The script scans all text files, replaces both forms, regenerates
-`bun.lock`, then deletes itself.
+`pnpm-lock.yaml`, then deletes itself.
