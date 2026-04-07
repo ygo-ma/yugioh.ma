@@ -15,7 +15,6 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx db/seed.ts",
     "db:reset": "rimraf sqlite.db && pnpm db:migrate && pnpm db:seed",
-    "start": "drizzle-kit migrate && node .output/server/index.mjs",
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {
