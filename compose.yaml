@@ -1,20 +1,36 @@
+x-app: &app
+  build: .
+  environment:
+    DATABASE_URL: "http://sqld:8080"
+  depends_on:
+    sqld:
+      condition: service_healthy
+
 services:
+  migrate:
+    <<: *app
+    command: ["pnpm", "exec", "drizzle-kit", "migrate"]
+    restart: "no"
+
   app:
-    build: .
+    <<: *app
+    command: ["node", "index.mjs"]
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: "http://sqld:8080"
     depends_on:
       sqld:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   sqld:
-    image: ghcr.io/tursodatabase/libsql-server:latest
+    image: ghcr.io/tursodatabase/libsql-server:v0.24.33
     volumes:
       - sqld-data:/var/lib/sqld
     healthcheck:
+      # A poor man's way to check if sqld is up and accepting connections
+      # since the image lacks wget or curl.
       test:
         - CMD-SHELL
         - timeout 1 cat < /dev/tcp/localhost/8080 ; [ $? -ne 1 ]
