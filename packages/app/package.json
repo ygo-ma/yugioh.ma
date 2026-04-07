@@ -21,7 +21,6 @@
   "dependencies": {
     "@acme/ui": "workspace:*",
     "@libsql/client": "catalog:",
-    "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:"
   },
