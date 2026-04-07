@@ -13,9 +13,9 @@ onlyBuiltDependencies:
 catalog:
   "@cloudflare/workers-types": "4.20260405.1"
   "@libsql/client": "0.17.2"
-  "@sentry/cloudflare": "10.44.0"
-  "@sentry/core": "10.44.0"
-  "@sentry/react": "10.44.0"
+  "@sentry/cloudflare": "10.47.0"
+  "@sentry/core": "10.47.0"
+  "@sentry/react": "10.47.0"
   "@sentry/vite-plugin": "5.1.1"
   "@storybook/addon-a11y": "10.3.4"
   "@storybook/addon-docs": "10.3.4"
