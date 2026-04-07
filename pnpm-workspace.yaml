@@ -33,7 +33,7 @@ catalog:
   classnames: "2.5.1"
   drizzle-kit: "0.31.10"
   drizzle-orm: "0.45.2"
-  hono: "4.12.8"
+  hono: "4.12.10"
   husky: "9.1.7"
   nitro: "3.0.260311-beta"
   oxfmt: "0.42.0"
