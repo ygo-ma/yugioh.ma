@@ -9,7 +9,7 @@
 import { Hono } from "hono";
 import type { HonoRequest } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../../db/types";
+import type { SentryBindings } from "../server/types";
 
 // Parse the server-side DSN to extract the upstream ingest URL.
 // DSN format: https://<key>@<host>/<project-id>
@@ -162,7 +162,7 @@ async function forwardEnvelope(
   throw new HTTPException(502);
 }
 
-const tunnel = new Hono<AppEnv>();
+const tunnel = new Hono<{ Bindings: SentryBindings }>();
 
 export default tunnel.post("/", async (context) => {
   const dsn = context.env.SENTRY_DSN;

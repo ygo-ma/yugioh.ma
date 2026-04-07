@@ -1,13 +1,13 @@
+import { Sentry } from "@acme/sentry/client";
+import mainCss from "@acme/ui/main.css?inline";
 import {
   Outlet,
   HeadContent,
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router";
-import * as Sentry from "@sentry/react";
 import type { ReactNode } from "react";
 import { ErrorFallback } from "~/components/error-fallback";
-import mainCss from "@acme/ui/main.css?inline";
 
 export const Route = createRootRoute({
   head: () => ({

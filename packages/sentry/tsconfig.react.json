@@ -1,0 +1,7 @@
+{
+  "extends": "@acme/tsconfig/tsconfig.react.json",
+  "include": ["src/client", "src/shared"],
+  "compilerOptions": {
+    "types": ["vite/client"]
+  }
+}

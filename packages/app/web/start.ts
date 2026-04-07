@@ -1,6 +1,6 @@
 import { createStart } from "@tanstack/react-start";
-import { sentryMiddleware } from "./middleware/sentry";
+import { sentryFunctionMiddleware } from "@acme/sentry/middleware";
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [sentryMiddleware],
+  functionMiddleware: [sentryFunctionMiddleware],
 }));

@@ -1,9 +1,27 @@
 import * as Sentry from "@sentry/cloudflare";
 import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../../db/types";
 
-const sentryErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
+/**
+ * Hono error handler that forwards uncaught API errors to Sentry and turns
+ * them into JSON 500 responses.
+ *
+ * - `HTTPException`s pass through unchanged. Ones with `status >= 500` are
+ *   reported, the rest aren't (they're expected client-error responses).
+ * - Anything else is captured and returned as `{ error, sentryEventId }`
+ *   so the frontend can surface the event ID for support.
+ *
+ * The current Sentry scope is enriched with the request IP, URL, and method.
+ *
+ * Wire it into your root Hono app:
+ *
+ * ```ts
+ * import { sentryHonoErrorHandler } from "@acme/sentry/api";
+ *
+ * new Hono().onError(sentryHonoErrorHandler).route(...)
+ * ```
+ */
+const sentryHonoErrorHandler: ErrorHandler = (error, context) => {
   // Enrich the Sentry scope
   const ip =
     context.req.header("cf-connecting-ip") ??
@@ -29,4 +47,4 @@ const sentryErrorHandler: ErrorHandler<AppEnv> = (error, context) => {
   );
 };
 
-export default sentryErrorHandler;
+export default sentryHonoErrorHandler;

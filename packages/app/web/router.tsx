@@ -1,6 +1,6 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { initSentryClient } from "@acme/sentry/client";
 import { routeTree } from "./routeTree.gen";
-import { initSentryClient } from "./sentry";
 
 export function getRouter() {
   const router = createTanStackRouter({

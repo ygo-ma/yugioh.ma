@@ -152,6 +152,9 @@ importers:
 
   packages/app:
     dependencies:
+      '@acme/sentry':
+        specifier: workspace:*
+        version: link:../sentry
       '@acme/ui':
         specifier: workspace:*
         version: link:../ui
@@ -171,18 +174,6 @@ importers:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
         version: 4.20260405.1
-      '@sentry/cloudflare':
-        specifier: 'catalog:'
-        version: 10.47.0(@cloudflare/workers-types@4.20260405.1)
-      '@sentry/core':
-        specifier: 'catalog:'
-        version: 10.47.0
-      '@sentry/react':
-        specifier: 'catalog:'
-        version: 10.47.0(react@19.2.4)
-      '@sentry/vite-plugin':
-        specifier: 'catalog:'
-        version: 5.1.1(rollup@4.60.1)
       '@tanstack/react-router':
         specifier: 'catalog:'
         version: 1.168.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -228,6 +219,61 @@ importers:
       wrangler:
         specifier: 'catalog:'
         version: 4.75.0(@cloudflare/workers-types@4.20260405.1)
+
+  packages/sentry:
+    dependencies:
+      '@sentry/cloudflare':
+        specifier: 'catalog:'
+        version: 10.47.0(@cloudflare/workers-types@4.20260405.1)
+      '@sentry/core':
+        specifier: 'catalog:'
+        version: 10.47.0
+      '@sentry/react':
+        specifier: 'catalog:'
+        version: 10.47.0(react@19.2.4)
+      '@sentry/vite-plugin':
+        specifier: 'catalog:'
+        version: 5.1.1(rollup@4.60.1)
+    devDependencies:
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 4.20260405.1
+      '@tanstack/react-router':
+        specifier: 'catalog:'
+        version: 1.168.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@tanstack/react-start':
+        specifier: 'catalog:'
+        version: 1.167.16(crossws@0.4.4(srvx@0.11.14))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0))
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.2
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.14)
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.10
+      nitro:
+        specifier: 'catalog:'
+        version: 3.0.260311-beta(@libsql/client@0.17.2)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260405.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(miniflare@4.20260401.0)(rollup@4.60.1)(vite@8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0))
+      react:
+        specifier: 'catalog:'
+        version: 19.2.4
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.4(react@19.2.4)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.0.3(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.2)(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0)
 
   packages/tsconfig:
     dependencies:

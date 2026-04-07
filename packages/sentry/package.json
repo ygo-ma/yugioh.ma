@@ -1,0 +1,46 @@
+{
+  "name": "@acme/sentry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./api": "./src/api/index.ts",
+    "./client": "./src/client/index.ts",
+    "./middleware": "./src/middleware/index.ts",
+    "./server": "./src/server/index.ts",
+    "./vite": "./src/vite/index.ts"
+  },
+  "scripts": {
+    "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
+  },
+  "dependencies": {
+    "@sentry/cloudflare": "catalog:",
+    "@sentry/core": "catalog:",
+    "@sentry/react": "catalog:",
+    "@sentry/vite-plugin": "catalog:"
+  },
+  "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:",
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "hono": "catalog:",
+    "nitro": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "hono": "catalog:",
+    "nitro": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vite": "catalog:"
+  }
+}
