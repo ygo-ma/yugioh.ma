@@ -1,8 +1,8 @@
 packages:
   - "packages/*"
 
-# 2 days in seconds, matches renovate's
-minimumReleaseAge: 172800
+# 2 days in minutes, matches renovate's
+minimumReleaseAge: 2880
 
 onlyBuiltDependencies:
   - "@sentry/cli"
