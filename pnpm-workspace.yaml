@@ -46,7 +46,7 @@ catalog:
   storybook: "10.3.4"
   tsx: "4.21.0"
   turbo: "2.9.3"
-  typescript: "5.9.3"
+  typescript: "6.0.2"
   vite: "8.0.3"
   vitest: "4.1.2"
   wrangler: "4.75.0"
