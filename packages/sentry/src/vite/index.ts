@@ -30,12 +30,21 @@ import type { PluginOption } from "vite";
 export function sentryPlugin(): PluginOption {
   const env = process.env;
 
-  // Bridge backend env vars → client-visible VITE_SENTRY_* keys at load time
-  // so Vite can statically replace `import.meta.env` references in browser code.
-  env.VITE_SENTRY_ENABLED = env.SENTRY_DSN;
-  env.VITE_SENTRY_ENVIRONMENT = env.SENTRY_ENVIRONMENT;
-  env.VITE_SENTRY_RELEASE = env.SENTRY_RELEASE;
-  env.VITE_SENTRY_DIST = env.SENTRY_DIST;
+  // Mirror a value into process.env only when it's actually set. Assigning
+  // `undefined` to a process.env key stringifies to the literal "undefined"
+  // — a truthy string that would shadow the client-side `?? "development"`
+  // fallback (?? only catches real null/undefined, not the string).
+  function mirror(target: string, value: string | undefined): void {
+    if (value) env[target] = value;
+  }
+
+  // Tell the client SDK that Sentry is configured, but DON'T copy the DSN
+  // itself — the dummy DSN + /api/sentry tunnel in @acme/sentry/client exists
+  // to keep the real DSN out of the public bundle.
+  mirror("VITE_SENTRY_ENABLED", env.SENTRY_DSN && "true");
+  mirror("VITE_SENTRY_ENVIRONMENT", env.SENTRY_ENVIRONMENT);
+  mirror("VITE_SENTRY_RELEASE", env.SENTRY_RELEASE);
+  mirror("VITE_SENTRY_DIST", env.SENTRY_DIST);
 
   return [
     {
