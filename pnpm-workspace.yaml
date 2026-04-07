@@ -12,7 +12,7 @@ onlyBuiltDependencies:
 
 catalog:
   "@cloudflare/workers-types": "4.20260317.1"
-  "@libsql/client": "0.17.0"
+  "@libsql/client": "0.17.2"
   "@sentry/cloudflare": "10.44.0"
   "@sentry/core": "10.44.0"
   "@sentry/react": "10.44.0"
