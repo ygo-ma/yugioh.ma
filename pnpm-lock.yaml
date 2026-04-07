@@ -70,8 +70,8 @@ catalogs:
       specifier: 0.31.10
       version: 0.31.10
     drizzle-orm:
-      specifier: 0.45.1
-      version: 0.45.1
+      specifier: 0.45.2
+      version: 0.45.2
     hono:
       specifier: 4.12.8
       version: 4.12.8
@@ -160,7 +160,7 @@ importers:
         version: 0.17.2
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)
+        version: 0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)
       hono:
         specifier: 'catalog:'
         version: 4.12.8
@@ -206,7 +206,7 @@ importers:
         version: 0.31.10
       nitro:
         specifier: 'catalog:'
-        version: 3.0.260311-beta(@libsql/client@0.17.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(rollup@4.60.1)(vite@8.0.0(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@22.15.17)(esbuild@0.27.5)(tsx@4.19.4))
+        version: 3.0.260311-beta(@libsql/client@0.17.2)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(rollup@4.60.1)(vite@8.0.0(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@22.15.17)(esbuild@0.27.5)(tsx@4.19.4))
       react:
         specifier: 'catalog:'
         version: 19.2.4
@@ -2693,8 +2693,8 @@ packages:
     resolution: {integrity: sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==}
     hasBin: true
 
-  drizzle-orm@0.45.1:
-    resolution: {integrity: sha512-Te0FOdKIistGNPMq2jscdqngBRfBpC8uMFVwqjf6gtTVJHIQ/dosgV/CLBU2N4ZJBsXL5savCba9b0YJskKdcA==}
+  drizzle-orm@0.45.2:
+    resolution: {integrity: sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -5783,10 +5783,10 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)):
+  db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)):
     optionalDependencies:
       '@libsql/client': 0.17.2
-      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)
+      drizzle-orm: 0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)
 
   debug@4.4.3:
     dependencies:
@@ -5846,7 +5846,7 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.21.0
 
-  drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1):
+  drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20260317.1
       '@libsql/client': 0.17.2
@@ -6283,11 +6283,11 @@ snapshots:
 
   nf3@0.3.14: {}
 
-  nitro@3.0.260311-beta(@libsql/client@0.17.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(rollup@4.60.1)(vite@8.0.0(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@22.15.17)(esbuild@0.27.5)(tsx@4.19.4)):
+  nitro@3.0.260311-beta(@libsql/client@0.17.2)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(rollup@4.60.1)(vite@8.0.0(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.1)(@types/node@22.15.17)(esbuild@0.27.5)(tsx@4.19.4)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.11.14)
-      db0: 0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))
+      db0: 0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))
       env-runner: 0.1.7
       h3: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.14))
       hookable: 6.1.0
@@ -6298,7 +6298,7 @@ snapshots:
       rolldown: 1.0.0-rc.13
       srvx: 0.11.14
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.7(db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3)
+      unstorage: 2.0.0-alpha.7(db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       dotenv: 16.6.1
       rollup: 4.60.1
@@ -6855,9 +6855,9 @@ snapshots:
       picomatch: 4.0.4
       webpack-virtual-modules: 0.6.2
 
-  unstorage@2.0.0-alpha.7(db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.7(db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3):
     optionalDependencies:
-      db0: 0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))
+      db0: 0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260317.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))
       lru-cache: 11.2.7
       ofetch: 2.0.0-alpha.3
 
