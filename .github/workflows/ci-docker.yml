@@ -21,8 +21,8 @@ jobs:
         run: docker run -d --name acme -p 3000:3000 acme
 
       - name: Health check
-        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-connrefused http://localhost:3000/api/health
+        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors http://localhost:3000/api/health
 
       - name: Stop container
         if: always()
-        run: docker rm -f acme
+        run: docker rm -fv acme
