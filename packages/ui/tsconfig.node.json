@@ -1,4 +1,4 @@
 {
-  "extends": "@acme/tsconfig/tsconfig.bun.json",
+  "extends": "@acme/tsconfig/tsconfig.node.json",
   "include": ["vite.config.ts", ".storybook/main.ts"]
 }

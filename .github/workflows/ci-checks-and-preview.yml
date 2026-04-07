@@ -31,13 +31,13 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Lint
-        run: bun lint
+        run: pnpm lint
 
       - name: Install Playwright
-        run: bun playwright:install
+        run: pnpm playwright:install
 
       - name: Test
-        run: bun test:cov
+        run: pnpm test:cov
 
       - name: Upload coverage
         if: env.CODECOV_TOKEN != ''
@@ -87,11 +87,11 @@ jobs:
         env:
           DB_NAME: ${{ steps.branch.outputs.db_name }}
         run: |
-          EXISTING=$(bunx wrangler d1 list --json | jq -r ".[] | select(.name == \"$DB_NAME\") | .uuid")
+          EXISTING=$(pnpm exec wrangler d1 list --json | jq -r ".[] | select(.name == \"$DB_NAME\") | .uuid")
           if [ -n "$EXISTING" ]; then
             DB_ID="$EXISTING"
           else
-            RESULT=$(bunx wrangler d1 create "$DB_NAME")
+            RESULT=$(pnpm exec wrangler d1 create "$DB_NAME")
             DB_ID=$(echo "$RESULT" | grep '"database_id"' | sed 's/.*"database_id": *"\([^"]*\)".*/\1/')
             NEW_DB=true
           fi
@@ -104,10 +104,10 @@ jobs:
             wrangler.json > wrangler.json.tmp
           mv wrangler.json.tmp wrangler.json
 
-          bunx wrangler d1 migrations apply "$DB_NAME" --remote
+          pnpm exec wrangler d1 migrations apply "$DB_NAME" --remote
 
           if [ "${NEW_DB:-}" = "true" ]; then
-            bunx wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
+            pnpm exec wrangler d1 execute "$DB_NAME" --remote --file=seed.sql
           fi
 
       - name: Set runtime vars
@@ -140,12 +140,12 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG || steps.branch.outputs.owner_slug }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT || steps.branch.outputs.project_slug }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        run: bun run build:preview
+        run: pnpm run build:preview
 
       - name: Create Pages project
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         working-directory: packages/app
-        run: bunx wrangler pages project create ${{ steps.branch.outputs.project_slug }}-staging --production-branch main || true
+        run: pnpm exec wrangler pages project create ${{ steps.branch.outputs.project_slug }}-staging --production-branch main || true
 
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -166,7 +166,7 @@ jobs:
         working-directory: packages/app
         run: |
           for ENV in preview production; do
-            echo "${{ secrets.SENTRY_DSN }}" | bunx wrangler pages secret put SENTRY_DSN --project-name=${{ steps.branch.outputs.project_slug }}-staging --env $ENV
+            echo "${{ secrets.SENTRY_DSN }}" | pnpm exec wrangler pages secret put SENTRY_DSN --project-name=${{ steps.branch.outputs.project_slug }}-staging --env $ENV
           done
 
       - name: Health check

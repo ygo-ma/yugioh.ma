@@ -23,7 +23,7 @@ root="$(cd "$(dirname "$0")" && pwd)"
 find "$root" -type f \
   -not -path '*/.git/*' \
   -not -path '*/node_modules/*' \
-  -not -name 'bun.lock' \
+  -not -name 'pnpm-lock.yaml' \
   -not -name 'init.sh' \
   -print0 |
 while IFS= read -r -d '' file; do
@@ -37,9 +37,9 @@ done
 
 echo "Replaced @acme → @$slug and acme → $slug"
 
-if command -v bun &>/dev/null; then
-  echo "Regenerating bun.lock..."
-  (cd "$root" && bun install)
+if command -v pnpm &>/dev/null; then
+  echo "Regenerating pnpm-lock.yaml..."
+  (cd "$root" && pnpm install)
 fi
 
 rm -- "$0"

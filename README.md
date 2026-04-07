@@ -1,6 +1,6 @@
 # Acme
 
-Full-stack app template: Bun monorepo with TanStack Start, Hono,
+Full-stack app template: Node + pnpm monorepo with TanStack Start, Hono,
 Drizzle ORM, and Nitro. Deploys to Cloudflare Pages or Docker.
 
 ## Getting Started
@@ -12,15 +12,15 @@ git clone <repo-url> my-project && cd my-project
 
 ./init.sh my-project   # replaces @acme/acme placeholders
 
-bun install
-bun dev
+pnpm install
+pnpm dev
 ```
 
 The app runs at `http://localhost:3000` with the API at `/api/*`.
 
 ## Dev Container
 
-The devcontainer is recommended for a consistent environment with Bun,
+The devcontainer is recommended for a consistent environment with Node.js,
 Playwright, and passwordless sudo pre-configured. Open the Project in VS Code
 or GitHub Codespaces and it will prompt you to reopen in the container.
 
@@ -30,19 +30,19 @@ is gitignored.
 
 ## Scripts
 
-| Command           | Description                          |
-| ----------------- | ------------------------------------ |
-| `bun dev`         | Start dev server                     |
-| `bun lint`        | Run oxfmt + oxlint + tsc             |
-| `bun lint:fix`    | Auto-fix lint issues                 |
-| `bun run test`    | Run tests                            |
-| `bun test:cov`    | Run tests with coverage              |
-| `bun build`       | Production build                     |
-| `bun db:generate` | Generate Drizzle migrations          |
-| `bun db:migrate`  | Apply migrations locally             |
-| `bun db:seed`     | Seed the local database              |
-| `bun db:reset`    | Drop and recreate the local database |
-| `bun storybook`   | Run Storybook at `localhost:6006`    |
+| Command            | Description                          |
+| ------------------ | ------------------------------------ |
+| `pnpm dev`         | Start dev server                     |
+| `pnpm lint`        | Run oxfmt + oxlint + tsc             |
+| `pnpm lint:fix`    | Auto-fix lint issues                 |
+| `pnpm test`        | Run tests                            |
+| `pnpm test:cov`    | Run tests with coverage              |
+| `pnpm build`       | Production build                     |
+| `pnpm db:generate` | Generate Drizzle migrations          |
+| `pnpm db:migrate`  | Apply migrations locally             |
+| `pnpm db:seed`     | Seed the local database              |
+| `pnpm db:reset`    | Drop and recreate the local database |
+| `pnpm storybook`   | Run UI Storybook at `localhost:6006` |
 
 ## Deployment
 
