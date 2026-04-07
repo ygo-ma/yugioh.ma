@@ -38,7 +38,7 @@ catalog:
   nitro: "3.0.260311-beta"
   oxfmt: "0.43.0"
   oxlint: "1.58.0"
-  oxlint-tsgolint: "0.18.1"
+  oxlint-tsgolint: "0.19.0"
   playwright: "1.58.2"
   react: "19.2.4"
   react-dom: "19.2.4"
