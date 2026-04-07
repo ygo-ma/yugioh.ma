@@ -31,11 +31,15 @@ jobs:
           fi
           echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
 
+      - name: Checkout
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        uses: actions/checkout@v6
+
+      - name: Setup
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        uses: ./.github/actions/setup
+
       - name: Delete D1 database
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
-        uses: cloudflare/wrangler-action@v3
-        with:
-          wranglerVersion: "4.75.0"
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          command: d1 delete "${{ steps.branch.outputs.db_name }}" --skip-confirmation
+        working-directory: packages/app
+        run: pnpm exec wrangler d1 delete "${{ steps.branch.outputs.db_name }}" --skip-confirmation

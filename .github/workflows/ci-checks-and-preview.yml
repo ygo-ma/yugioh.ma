@@ -150,16 +150,21 @@ jobs:
       - name: Deploy
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         id: deploy
-        uses: cloudflare/wrangler-action@v3
-        with:
-          wranglerVersion: "4.75.0"
-          workingDirectory: packages/app
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          command: >-
-            pages deploy dist
-            --project-name=${{ steps.branch.outputs.project_slug }}-staging
-            --branch=${{ github.head_ref || github.ref_name }}
+        working-directory: packages/app
+        env:
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.ndjson
+          PROJECT_SLUG: ${{ steps.branch.outputs.project_slug }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          pnpm exec wrangler pages deploy dist \
+            --project-name="$PROJECT_SLUG-staging" \
+            --branch="$BRANCH"
+
+          deployment_url=$(jq -r 'select(.type == "pages-deploy-detailed") | .url // empty' "$WRANGLER_OUTPUT_FILE_PATH" | head -n1)
+          alias_url=$(jq -r 'select(.type == "pages-deploy-detailed") | .alias // empty' "$WRANGLER_OUTPUT_FILE_PATH" | head -n1)
+
+          echo "pages-deployment-url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "pages-deployment-alias-url=$alias_url" >> "$GITHUB_OUTPUT"
 
       - name: Set Pages secrets
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
