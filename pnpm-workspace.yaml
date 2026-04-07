@@ -37,7 +37,7 @@ catalog:
   husky: "9.1.7"
   nitro: "3.0.260311-beta"
   oxfmt: "0.43.0"
-  oxlint: "1.57.0"
+  oxlint: "1.58.0"
   oxlint-tsgolint: "0.18.1"
   playwright: "1.58.2"
   react: "19.2.4"
