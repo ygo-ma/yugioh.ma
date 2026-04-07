@@ -160,8 +160,20 @@ jobs:
             --project-name="$PROJECT_SLUG-staging" \
             --branch="$BRANCH"
 
+          if [[ ! -s "$WRANGLER_OUTPUT_FILE_PATH" ]]; then
+            echo "::error::wrangler did not write structured output to $WRANGLER_OUTPUT_FILE_PATH (env var unsupported by this wrangler version?)" >&2
+            exit 1
+          fi
+
           deployment_url=$(jq -r 'select(.type == "pages-deploy-detailed") | .url // empty' "$WRANGLER_OUTPUT_FILE_PATH" | head -n1)
           alias_url=$(jq -r 'select(.type == "pages-deploy-detailed") | .alias // empty' "$WRANGLER_OUTPUT_FILE_PATH" | head -n1)
+
+          if [[ -z "$deployment_url" ]]; then
+            echo "::error::could not extract deployment URL from wrangler output (no pages-deploy-detailed entry with .url)" >&2
+            echo "--- $WRANGLER_OUTPUT_FILE_PATH ---" >&2
+            cat "$WRANGLER_OUTPUT_FILE_PATH" >&2
+            exit 1
+          fi
 
           echo "pages-deployment-url=$deployment_url" >> "$GITHUB_OUTPUT"
           echo "pages-deployment-alias-url=$alias_url" >> "$GITHUB_OUTPUT"
