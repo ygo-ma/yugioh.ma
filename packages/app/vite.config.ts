@@ -14,6 +14,9 @@ export default defineConfig({
     nitro({
       serverDir: "./server",
       errorHandler: "./server/error.ts",
+      rolldownConfig: {
+        external: ["iovalkey"],
+      },
     }),
     sentryPlugin(),
   ],
