@@ -10,13 +10,14 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm turbo build --filter=@acme/app
 
 # Inject the migration-time deps (drizzle-kit + its peer deps drizzle-orm
-# and @libsql/client, which nitro inlined into the bundle) directly into
+# and @libsql/client, which nitro inlined into the bundle) and iovalkey
+# (the cache layer's Valkey client, used in compose mode) directly into
 # the nitro-generated server package.json, pinned to the exact versions
 # from the lockfile's resolved catalog. The prod stage's pnpm install
 # then resolves everything in one shot.
 RUN apk add --no-cache yq-go \
  && cd packages/app/.output/server \
- && for dep in drizzle-kit drizzle-orm @libsql/client; do \
+ && for dep in drizzle-kit drizzle-orm @libsql/client iovalkey; do \
       ver=$(yq ".catalogs.default[\"$dep\"].version" /app/pnpm-lock.yaml) \
       && yq -i -o json ".dependencies[\"$dep\"] = \"$ver\"" package.json; \
     done \

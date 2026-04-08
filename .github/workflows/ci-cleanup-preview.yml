@@ -30,6 +30,7 @@ jobs:
             BRANCH_SLUG="pr-${{ github.event.pull_request.number }}"
           fi
           echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
+          echo "kv_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-cache" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
@@ -43,3 +44,14 @@ jobs:
         if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
         working-directory: packages/app
         run: pnpm exec wrangler d1 delete "${{ steps.branch.outputs.db_name }}" --skip-confirmation
+
+      - name: Delete KV namespace
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        working-directory: packages/app
+        env:
+          KV_NAME: ${{ steps.branch.outputs.kv_name }}
+        run: |
+          KV_ID=$(pnpm exec wrangler kv namespace list | jq -r ".[] | select(.title == \"$KV_NAME\") | .id")
+          if [ -n "$KV_ID" ]; then
+            pnpm exec wrangler kv namespace delete --namespace-id "$KV_ID"
+          fi

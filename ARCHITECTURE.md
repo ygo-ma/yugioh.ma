@@ -54,6 +54,22 @@ The DB driver is resolved at request time based on the runtime:
 The Hono middleware `dbMiddleware` injects the resolved Drizzle
 instance via `context.set("db", ...)`, so handlers are driver-agnostic.
 
+## Cache Abstraction
+
+The cache driver is resolved at request time, mirroring the
+database layer:
+
+- **Cloudflare (workerd)**: KV namespace bound as `CACHE`
+- **Docker compose**: Valkey via `iovalkey`, when `CACHE_URL` is set
+  (e.g. `redis://valkey:6379`)
+- **Dev / single-container Docker**: in-memory `Map` with lazy TTL
+  eviction
+
+The Hono middleware `cacheMiddleware` injects the resolved cache
+via `context.set("cache", ...)`. The interface is intentionally
+minimal — `get`, `set(key, value, ttl?)`, `delete` — and values are
+strings, so callers handle their own serialization.
+
 ## Error Tracking (Sentry)
 
 Sentry is initialized in three places — each runtime context has
@@ -82,10 +98,10 @@ drops these to prevent double-reporting.
 | Layer   | Cloudflare      | Docker (self-hosted)  | Dev / Standalone        |
 | ------- | --------------- | --------------------- | ----------------------- |
 | DB      | D1 (drizzle/d1) | sqld (drizzle/libsql) | SQLite (drizzle/libsql) |
-| Cache   | KV              | Valkey                | In-memory               |
+| Cache   | KV              | Valkey (iovalkey)     | In-memory               |
 | Storage | R2 (unstorage)  | S3/MinIO (unstorage)  | Filesystem (unstorage)  |
 
-Cache and storage are planned but not yet implemented.
+Storage is planned but not yet implemented.
 
 ## CI/CD
 
