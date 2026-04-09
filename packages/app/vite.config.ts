@@ -4,20 +4,27 @@ import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
-export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
-  plugins: [
-    tanstackStart({ srcDirectory: "web" }),
-    viteReact(),
-    nitro({
-      serverDir: "./server",
-      errorHandler: "./server/error.ts",
-      rolldownConfig: {
-        external: ["iovalkey", "@libsql/client", "drizzle-orm/libsql"],
-      },
-    }),
-    sentryPlugin(),
-  ],
+export default defineConfig(() => {
+  const NITRO_PRESET = process.env.NITRO_PRESET;
+  const isCloudflarePreset = NITRO_PRESET?.startsWith("cloudflare") ?? false;
+
+  return {
+    resolve: {
+      tsconfigPaths: true,
+    },
+    plugins: [
+      tanstackStart({ srcDirectory: "web" }),
+      viteReact(),
+      nitro({
+        serverDir: "./server",
+        errorHandler: "./server/error.ts",
+        rolldownConfig: {
+          external: isCloudflarePreset
+            ? ["iovalkey", "@libsql/client", "drizzle-orm/libsql"]
+            : [],
+        },
+      }),
+      sentryPlugin(),
+    ],
+  };
 });
