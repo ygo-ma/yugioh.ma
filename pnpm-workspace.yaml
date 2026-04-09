@@ -38,7 +38,7 @@ catalog:
   husky: "9.1.7"
   iovalkey: "0.3.3"
   nitro: "3.0.260311-beta"
-  oxfmt: "0.43.0"
+  oxfmt: "0.44.0"
   oxlint: "1.58.0"
   oxlint-tsgolint: "0.20.0"
   playwright: "1.59.1"
