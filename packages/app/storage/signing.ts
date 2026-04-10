@@ -84,6 +84,27 @@ async function s3Presign(
 }
 
 /**
+ * Constant-time string comparison to prevent timing attacks.
+ * Always compares all bytes regardless of where the first mismatch occurs.
+ */
+function timingSafeEqual(expected: string, actual: string): boolean {
+  const encoder = new TextEncoder();
+  const bufExpected = encoder.encode(expected);
+  const bufActual = encoder.encode(actual);
+  if (bufExpected.byteLength !== bufActual.byteLength) {
+    return false;
+  }
+
+  const diff = bufExpected.reduce(
+    // oxlint-disable-next-line eslint/no-bitwise -- intentional
+    (acc, byte, index) => acc | (byte ^ (bufActual[index] ?? 0)),
+    0,
+  );
+
+  return diff === 0;
+}
+
+/**
  * Verifies an HMAC-signed proxy URL token. Throws 403 if the token is
  * missing, expired, or invalid.
  */
@@ -104,7 +125,7 @@ export async function verifyHmacToken(
   }
 
   const expected = await hmacSign(`${bucket}:${key}:${expires}`, signingKey);
-  if (token !== expected) {
+  if (!timingSafeEqual(expected, token)) {
     throw new HTTPException(403, { message: "invalid signed URL token" });
   }
 }
