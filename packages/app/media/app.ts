@@ -2,28 +2,13 @@ import { sentryHonoErrorHandler } from "@acme/sentry/api";
 import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../server/types";
-import { hmacSign, isProxyDisabled, storageMiddleware } from "../storage";
+import {
+  isProxyDisabled,
+  storageMiddleware,
+  verifyHmacToken,
+} from "../storage";
 import { BUCKET_NAMES, BUCKETS, type BucketName } from "../storage/buckets";
 import { type FileMeta, metaKey } from "../storage/helpers";
-
-async function verifyHmacToken(
-  bucket: BucketName,
-  key: string,
-  query: { expires?: string; token?: string },
-  signingKey: string,
-): Promise<void> {
-  const { expires, token } = query;
-  if (!expires || !token) {
-    throw new HTTPException(403, { message: "missing signed URL token" });
-  }
-  if (Number(expires) < Date.now() / 1000) {
-    throw new HTTPException(403, { message: "signed URL has expired" });
-  }
-  const expected = await hmacSign(`${bucket}:${key}:${expires}`, signingKey);
-  if (token !== expected) {
-    throw new HTTPException(403, { message: "invalid signed URL token" });
-  }
-}
 
 function buildGetHandler(bucket: BucketName) {
   return async (context: Context<AppEnv>) => {
