@@ -1,28 +1,14 @@
-import type { KVNamespace, R2Bucket } from "@cloudflare/workers-types";
+import type { KVNamespace } from "@cloudflare/workers-types";
 import { getRuntimeKey } from "hono/adapter";
 import { createMiddleware } from "hono/factory";
 import { createStorage, prefixStorage } from "unstorage";
 import type { AppEnv } from "../server/types";
-import type { BucketName } from "./buckets";
+import { BUCKET_NAMES, BUCKETS, type BucketName } from "./buckets";
 import type { Buckets, Storage } from "./types";
 
 export type { Buckets };
 
-/**
- * Reads `STORAGE_<BUCKET>_PUBLIC_URL` from the Cloudflare bindings or
- * `process.env`. The Record literal is exhaustive over `BucketName` so
- * adding a new public bucket is a compile-time push to extend it.
- */
-function readPublicUrlEnv(
-  bucket: BucketName,
-  env: AppEnv["Bindings"],
-): string | undefined {
-  const urls: Record<BucketName, string | undefined> = {
-    public: env.STORAGE_PUBLIC_URL ?? process.env.STORAGE_PUBLIC_URL,
-    private: undefined, // private bucket — no public URL by definition
-  };
-  return urls[bucket];
-}
+// ── URL helpers ─────────────────────────────────────────────────────
 
 function hasS3Creds(env: AppEnv["Bindings"]): boolean {
   return Boolean(
@@ -41,48 +27,23 @@ export function isProxyDisabled(
   bucket: BucketName,
   env: AppEnv["Bindings"],
 ): boolean {
-  if (readPublicUrlEnv(bucket, env) !== undefined) return true;
+  if (BUCKETS[bucket].publicUrl(env)) return true;
   if (hasS3Creds(env)) return true;
   return false;
 }
 
 /**
- * Returns the URL the client should use for a given file. Public bucket
- * with `STORAGE_<BUCKET>_PUBLIC_URL` set → direct R2/S3 URL. Otherwise →
- * the backend proxy path (the dev fallback for public buckets, and the
- * only path for private buckets).
+ * Returns a stable URL for a file. Public bucket with a direct URL
+ * configured → that URL. Otherwise → the backend proxy path.
  */
 export function urlFor(
   bucket: BucketName,
   env: AppEnv["Bindings"],
   key: string,
 ): string {
-  const base = readPublicUrlEnv(bucket, env);
+  const base = BUCKETS[bucket].publicUrl(env);
   if (base) return `${base.replace(/\/$/u, "")}/${key}`;
   return `/media/${bucket}/${key}`;
-}
-
-/** Per-bucket R2 binding lookup. Exhaustive over `BucketName`. */
-function r2BindingFor(
-  bucket: BucketName,
-  env: AppEnv["Bindings"],
-): R2Bucket | undefined {
-  const bindings: Record<BucketName, R2Bucket | undefined> = {
-    public: env.STORAGE_PUBLIC,
-    private: env.STORAGE_PRIVATE,
-  };
-  return bindings[bucket];
-}
-
-/** Per-bucket S3 bucket name. Reads from env bindings (CF) or process.env (Node). */
-function s3BucketNameFor(bucket: BucketName, env?: AppEnv["Bindings"]): string {
-  const bucketNames: Record<BucketName, string> = {
-    public:
-      env?.S3_BUCKET_PUBLIC ?? process.env.S3_BUCKET_PUBLIC ?? "acme-public",
-    private:
-      env?.S3_BUCKET_PRIVATE ?? process.env.S3_BUCKET_PRIVATE ?? "acme-private",
-  };
-  return bucketNames[bucket];
 }
 
 // ── Presigned URLs ──────────────────────────────────────────────────
@@ -129,7 +90,7 @@ export async function presignUrl(
 
   if (endpoint && accessKeyId && secretAccessKey) {
     const { AwsClient } = await import("aws4fetch");
-    const bucketName = s3BucketNameFor(bucket, env);
+    const bucketName = BUCKETS[bucket].s3BucketName(env);
     const url = new URL(`/${bucketName}/${key}`, endpoint);
     url.searchParams.set("X-Amz-Expires", String(ttlSeconds));
     const client = new AwsClient({
@@ -167,7 +128,7 @@ async function resolveCloudflareDriver(
   bucket: BucketName,
   env: AppEnv["Bindings"],
 ): Promise<Storage> {
-  const r2Binding = r2BindingFor(bucket, env);
+  const r2Binding = BUCKETS[bucket].r2Binding(env);
   if (r2Binding) {
     const { default: r2Driver } =
       await import("unstorage/drivers/cloudflare-r2-binding");
@@ -175,7 +136,6 @@ async function resolveCloudflareDriver(
   }
 
   // Opt-in KV mode: KV_STORAGE names the KV binding to use (e.g., "CACHE").
-  // CI sets this for preview environments where R2 billing may not be enabled.
   const kvBindingName = env.KV_STORAGE;
   if (kvBindingName) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
@@ -216,7 +176,7 @@ async function resolveBucket(
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
         endpoint: process.env.S3_ENDPOINT,
         region: process.env.S3_REGION ?? "auto",
-        bucket: s3BucketNameFor(bucket),
+        bucket: BUCKETS[bucket].s3BucketName(env),
       }),
     });
   } else {
@@ -228,8 +188,6 @@ async function resolveBucket(
     });
   }
 
-  // In preview environments, each branch's objects are namespaced under a
-  // key prefix so multiple PRs can share the same physical bucket.
   const keyPrefix = env.STORAGE_KEY_PREFIX ?? process.env.STORAGE_KEY_PREFIX;
   if (keyPrefix) {
     storage = prefixStorage(storage, keyPrefix);
@@ -241,14 +199,13 @@ async function resolveBucket(
 export async function resolveStorage(
   env: AppEnv["Bindings"],
 ): Promise<Buckets> {
-  // Building this object literally (rather than reducing over BUCKETS) keeps
-  // the result type narrow without any cast — the compiler verifies every
-  // BucketName key is present. Adding a bucket is a compile-time push.
-  const [publicBucket, privateBucket] = await Promise.all([
-    resolveBucket("public", env),
-    resolveBucket("private", env),
-  ]);
-  return { public: publicBucket, private: privateBucket };
+  const entries = await Promise.all(
+    BUCKET_NAMES.map(
+      async (name) => [name, await resolveBucket(name, env)] as const,
+    ),
+  );
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+  return Object.fromEntries(entries) as Buckets;
 }
 
 let cachedStorage: Buckets | null = null;
