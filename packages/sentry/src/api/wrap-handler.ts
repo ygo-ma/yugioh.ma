@@ -24,8 +24,14 @@ import type { SentryBindings } from "../server/types";
  */
 export function createApiEventHandler<HonoEnv extends Env>(app: Hono<HonoEnv>) {
   return defineEventHandler((event) => {
-    const env = (event.runtime?.cloudflare?.env ??
-      process.env) as SentryBindings & HonoEnv["Bindings"];
+    const cfEnv = (event.runtime?.cloudflare?.env ?? {}) as SentryBindings &
+      HonoEnv["Bindings"];
+    const env = new Proxy(cfEnv, {
+      get: (target, key, receiver) =>
+        typeof key === "symbol"
+          ? Reflect.get(target, key, receiver)
+          : Reflect.get(target, key, receiver) || process.env[key],
+    });
     const dsn = env.SENTRY_DSN;
     const context = event.runtime?.cloudflare?.context;
 

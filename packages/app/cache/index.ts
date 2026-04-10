@@ -16,9 +16,9 @@ export async function resolveCache(env: AppEnv["Bindings"]): Promise<Cache> {
 
   // On Node.js: use Valkey if CACHE_URL is set (docker compose), otherwise
   // fall back to an in-memory store (dev or single-container Docker).
-  if (process.env.CACHE_URL) {
+  if (env.CACHE_URL) {
     const { createValkeyCache } = await import("./valkey");
-    return createValkeyCache(process.env.CACHE_URL);
+    return createValkeyCache(env.CACHE_URL);
   }
 
   const { createMemoryCache } = await import("./memory");
