@@ -47,7 +47,12 @@ RUN pnpm install --prod
 
 ENV NODE_ENV=production
 ENV PORT=3000
+
+# Default database URL for standalone deployments using the fs driver.
 ENV DATABASE_URL=file:///var/lib/acme/sqlite.db
+
+# HMAC key for signing private file URLs. Required when not using S3
+# storage (i.e., standalone fs driver).
 ENV STORAGE_SIGNING_KEY=acme-standalone-signing-key-replace-me
 
 EXPOSE 3000
