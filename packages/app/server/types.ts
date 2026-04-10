@@ -9,31 +9,49 @@ import type { Database } from "../db/types";
 import type { Buckets } from "../storage/types";
 
 export interface CfBindings extends SentryBindings {
-  // Database namespace
+  // ── Database ──
   DB?: D1Database;
-  // KV namespace
+
+  // ── Cache ──
   CACHE?: KVNamespace;
-  // R2 public bucket
+
+  // ── Storage: R2 bindings (Cloudflare only) ──
   STORAGE_PUBLIC?: R2Bucket;
-  // Direct URL for the public bucket (R2 custom domain, CDN, etc.)
-  STORAGE_URL_PUBLIC?: string;
-  // R2 private bucket
   STORAGE_PRIVATE?: R2Bucket;
+
+  // ── Storage: direct URL for the public bucket ──
+  // CDN, R2 custom domain, etc. When set, the /media proxy returns 404
+  // for this bucket and urlFor() returns this URL instead.
+  STORAGE_URL_PUBLIC?: string;
+
+  // ── Storage: per-bucket key prefixes ──
+  // Namespace objects within a bucket (e.g., branch slug for CI preview
+  // isolation, or per-prefix visibility rules on a shared S3 bucket).
   STORAGE_PREFIX_PUBLIC?: string;
   STORAGE_PREFIX_PRIVATE?: string;
+
+  // ── Storage: HMAC signing key ──
+  // When set, private files are served through the /media proxy with
+  // HMAC token verification. Takes priority over S3 presigning.
   STORAGE_SIGNING_KEY?: string;
-  // Optional alternative R2 storage for testing or other purposes
-  // Required to enable URL-signing for private R2 storage
+
+  // ── Storage: S3-compatible backend ──
+  // Used as the storage driver when R2 bindings are absent,
+  // and for generating presigned URLs (direct-to-bucket downloads).
+  // Works with AWS S3, MinIO, Cloudflare R2's S3-compatible endpoint, etc.
   S3_ENDPOINT?: string;
   S3_ACCESS_KEY_ID?: string;
   S3_SECRET_ACCESS_KEY?: string;
-  // Optional S3 region and bucket names for compatibility with S3-compatible storage
   S3_REGION?: string;
   S3_BUCKET_PUBLIC?: string;
   S3_BUCKET_PRIVATE?: string;
-  // Optional alternative KV storage for testing or other purposes
+
+  // ── Storage: KV fallback (Cloudflare only) ──
+  // Names a KV binding to use for storage when R2 and S3 are absent.
+  // Set to "CACHE" to reuse the cache namespace (free tier).
   KV_STORAGE?: string;
-  // Optional basic auth credentials in the format "username:password"
+
+  // ── Auth ──
   BASIC_AUTH_CREDENTIALS?: string;
 }
 
