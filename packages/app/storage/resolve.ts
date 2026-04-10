@@ -6,90 +6,118 @@ import type { AppEnv } from "../server/types";
 import { BUCKET_NAMES, BUCKETS, type BucketName } from "./buckets";
 import type { Buckets, Storage } from "./types";
 
-/**
- * Resolve the Cloudflare storage driver: R2 (requires billing) or KV
- * (free tier, opt-in via `KV_STORAGE=<binding-name>`).
- */
-async function resolveCloudflareDriver(
+type Env = AppEnv["Bindings"];
+
+/** R2 binding — Cloudflare Workers only, requires billing. */
+async function tryR2(
   bucket: BucketName,
-  env: AppEnv["Bindings"],
-): Promise<Storage> {
-  const r2Binding = BUCKETS[bucket].r2Binding(env);
-  if (r2Binding) {
-    const { default: r2Driver } =
-      await import("unstorage/drivers/cloudflare-r2-binding");
-    return createStorage({ driver: r2Driver({ binding: r2Binding }) });
-  }
+  env: Env,
+): Promise<Storage | undefined> {
+  const binding = BUCKETS[bucket].r2Binding(env);
+  if (!binding) return undefined;
 
-  // Opt-in KV mode: KV_STORAGE names the KV binding to use (e.g., "CACHE").
-  const kvBindingName = env.KV_STORAGE;
-  if (kvBindingName) {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-    const kvBinding = (env as Record<string, unknown>)[kvBindingName] as
-      | KVNamespace
-      | undefined;
-    if (!kvBinding) {
-      throw new Error(
-        `KV_STORAGE=${kvBindingName} but no binding "${kvBindingName}" exists`,
-      );
-    }
-
-    const { default: kvDriver } =
-      await import("unstorage/drivers/cloudflare-kv-binding");
-    return createStorage({
-      driver: kvDriver({ binding: kvBinding, base: `storage:${bucket}` }),
-    });
-  }
-
-  throw new Error(
-    "No storage backend: add R2 bindings, or set KV_STORAGE=<binding-name>",
-  );
+  const { default: r2Driver } =
+    await import("unstorage/drivers/cloudflare-r2-binding");
+  return createStorage({ driver: r2Driver({ binding }) });
 }
 
-async function resolveBucket(
+/** KV fallback — Cloudflare Workers only, free tier. */
+async function tryKV(
   bucket: BucketName,
-  env: AppEnv["Bindings"],
-): Promise<Storage> {
-  let storage: Storage;
+  env: Env,
+): Promise<Storage | undefined> {
+  const kvBindingName = env.KV_STORAGE;
+  if (!kvBindingName) return undefined;
 
-  if (getRuntimeKey() === "workerd") {
-    storage = await resolveCloudflareDriver(bucket, env);
-  } else if (process.env.S3_ENDPOINT) {
-    if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
-      throw new Error(
-        "S3_ENDPOINT is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing",
-      );
-    }
-    const { default: s3Driver } = await import("unstorage/drivers/s3");
-    storage = createStorage({
-      driver: s3Driver({
-        accessKeyId: process.env.S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
-        endpoint: process.env.S3_ENDPOINT,
-        region: process.env.S3_REGION ?? "auto",
-        bucket: BUCKETS[bucket].s3BucketName(env),
-      }),
-    });
-  } else {
-    const { default: fsDriver } = await import("unstorage/drivers/fs");
-    storage = createStorage({
-      driver: fsDriver({
-        base: `${process.env.STORAGE_DIR ?? "./data/storage"}/${bucket}`,
-      }),
-    });
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+  const kvBinding = (env as Record<string, unknown>)[kvBindingName] as
+    | KVNamespace
+    | undefined;
+  if (!kvBinding) {
+    throw new Error(
+      `KV_STORAGE=${kvBindingName} but no binding "${kvBindingName}" exists`,
+    );
+  }
+
+  const { default: kvDriver } =
+    await import("unstorage/drivers/cloudflare-kv-binding");
+  return createStorage({
+    driver: kvDriver({ binding: kvBinding, base: `storage:${bucket}` }),
+  });
+}
+
+/** S3-compatible storage — any runtime. */
+async function tryS3(
+  bucket: BucketName,
+  env: Env,
+): Promise<Storage | undefined> {
+  const endpoint = env.S3_ENDPOINT ?? process.env.S3_ENDPOINT;
+  if (!endpoint) return undefined;
+
+  const accessKeyId = env.S3_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey =
+    env.S3_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY;
+  if (!accessKeyId || !secretAccessKey) {
+    throw new Error(
+      "S3_ENDPOINT is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing",
+    );
+  }
+
+  const { default: s3Driver } = await import("unstorage/drivers/s3");
+  return createStorage({
+    driver: s3Driver({
+      accessKeyId,
+      secretAccessKey,
+      endpoint,
+      region: env.S3_REGION ?? process.env.S3_REGION ?? "auto",
+      bucket: BUCKETS[bucket].s3BucketName(env),
+    }),
+  });
+}
+
+/** Local filesystem — Node.js only. */
+async function tryFS(bucket: BucketName): Promise<Storage | undefined> {
+  if (getRuntimeKey() === "workerd") return undefined;
+
+  const { default: fsDriver } = await import("unstorage/drivers/fs");
+  return createStorage({
+    driver: fsDriver({
+      base: `${process.env.STORAGE_DIR ?? "./data/storage"}/${bucket}`,
+    }),
+  });
+}
+
+/**
+ * Resolves the storage driver for a bucket. Tries each backend in
+ * priority order — the first one that's configured wins:
+ *
+ * 1. **R2 binding** — Cloudflare Workers only, requires billing.
+ * 2. **KV fallback** — Cloudflare Workers only, free tier via `KV_STORAGE`.
+ * 3. **S3** — any runtime, when `S3_ENDPOINT` is set.
+ * 4. **Filesystem** — Node.js only, local dev default.
+ */
+async function resolveBucket(bucket: BucketName, env: Env): Promise<Storage> {
+  const storage =
+    (await tryR2(bucket, env)) ??
+    (await tryKV(bucket, env)) ??
+    (await tryS3(bucket, env)) ??
+    (await tryFS(bucket));
+
+  if (!storage) {
+    throw new Error(
+      "No storage backend: add R2 bindings, set S3_ENDPOINT, or set KV_STORAGE=<binding-name>",
+    );
   }
 
   const keyPrefix = BUCKETS[bucket].keyPrefix(env);
   if (keyPrefix) {
-    storage = prefixStorage(storage, keyPrefix);
+    return prefixStorage(storage, keyPrefix);
   }
 
   return storage;
 }
 
-export async function resolveStorage(
-  env: AppEnv["Bindings"],
-): Promise<Buckets> {
+export async function resolveStorage(env: Env): Promise<Buckets> {
   const entries = await Promise.all(
     BUCKET_NAMES.map(
       async (name) => [name, await resolveBucket(name, env)] as const,
