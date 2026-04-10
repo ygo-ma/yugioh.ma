@@ -9,14 +9,11 @@ import type { SentryBindings } from "../server/types";
  * handler is called directly.
  */
 export function withSentry(
-  options: {
-    env: SentryBindings;
-    request: Request;
-    context?: ExecutionContext;
-  },
+  env: SentryBindings,
+  request: Request,
+  context: ExecutionContext | undefined,
   handler: () => Response | Promise<Response>,
 ): Response | Promise<Response> {
-  const { env, request, context } = options;
   const dsn = env.SENTRY_DSN;
 
   if (!dsn || !context) return handler();

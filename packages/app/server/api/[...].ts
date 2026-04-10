@@ -5,16 +5,16 @@ import app from "../../api/app";
 import { createEnvProxy } from "../env";
 import type { AppEnv } from "../types";
 
-type HonoBindings = NonNullable<Env["Bindings"]>;
+type Bindings<HonoEnv extends Env> = NonNullable<HonoEnv["Bindings"]>;
 
 function createApiEventHandler<HonoEnv extends Env>(honoApp: Hono<HonoEnv>) {
-  return defineEventHandler((event) => {
-    const cfEnv = (event.runtime?.cloudflare?.env ?? {}) as HonoBindings;
+  return defineEventHandler(({ runtime, req }) => {
+    const cfEnv = (runtime?.cloudflare?.env ?? {}) as Bindings<HonoEnv>;
     const env = createEnvProxy(cfEnv);
-    const context = event.runtime?.cloudflare?.context;
+    const context = runtime?.cloudflare?.context;
 
-    return withSentry({ env, request: event.req, context }, () =>
-      honoApp.fetch(event.req, env, context),
+    return withSentry(env, req, context, () =>
+      honoApp.fetch(req, env, context),
     );
   });
 }
