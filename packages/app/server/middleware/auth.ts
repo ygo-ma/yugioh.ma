@@ -2,7 +2,7 @@ import { defineEventHandler } from "nitro/h3";
 import { PUBLIC_BUCKETS } from "../../storage/buckets";
 import type { CfBindings } from "../types";
 
-const publicBucketReads = PUBLIC_BUCKETS.map((name) => `/api/v1/${name}/`);
+const publicBucketReads = PUBLIC_BUCKETS.map((name) => `/media/${name}/`);
 
 export default defineEventHandler((event) => {
   if (event.url.pathname === "/api/health") {

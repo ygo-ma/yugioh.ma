@@ -49,7 +49,7 @@ export function urlFor(
 ): string {
   const base = readPublicUrlEnv(bucket, env);
   if (base) return `${base.replace(/\/$/u, "")}/${key}`;
-  return `/api/v1/${bucket}/${key}`;
+  return `/media/${bucket}/${key}`;
 }
 
 /** Per-bucket R2 binding lookup. Exhaustive over `BucketName`. */

@@ -1,8 +1,8 @@
 import { type Context, Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../../db/types";
-import { hasDirectPublicUrl, urlFor } from "../../storage";
-import { BUCKETS, type BucketName } from "../../storage/buckets";
+import type { AppEnv } from "../db/types";
+import { hasDirectPublicUrl, urlFor } from "../storage";
+import { BUCKETS, type BucketName } from "../storage/buckets";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 
