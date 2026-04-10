@@ -30,13 +30,13 @@ jobs:
   docker-compose:
     name: Works with docker compose
     runs-on: ubuntu-latest
+    env:
+      STORAGE_SIGNING_KEY: ci-dummy-key
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Build & start
-        env:
-          STORAGE_SIGNING_KEY: ci-dummy-key
         run: docker compose up -d --build
 
       - name: Health check
