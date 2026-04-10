@@ -19,9 +19,8 @@ const stackParser = createStackParser(nodeStackLineParser());
  *
  * Manual `CloudflareClient` construction is required because
  * `@sentry/cloudflare` doesn't expose an `init()` helper. The companion
- * `wrapRequestHandler` (used by `createApiEventHandler` from
- * `@acme/sentry/api`) only covers `/api/*`, so this middleware exists to
- * cover SSR + TanStack Start server functions.
+ * `withSentry` wrapper (from `@acme/sentry/api`) only covers `/api/*`,
+ * so this middleware exists to cover SSR + TanStack Start server functions.
  *
  * Re-exported as the default export of `@acme/sentry/server` so the host app
  * can drop a 2-line shim into `server/middleware/sentry.ts` for Nitro's
@@ -29,8 +28,9 @@ const stackParser = createStackParser(nodeStackLineParser());
  */
 export default defineEventHandler((event) => {
   if (!isInitialized()) {
-    const cfEnv = event.runtime?.cloudflare?.env as SentryBindings | undefined;
-    const env = cfEnv ?? process.env;
+    // Set by the host app's env middleware (e.g. 00-env.ts).
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const env = event.context.env as SentryBindings;
     const dsn = env.SENTRY_DSN;
     if (!dsn) return;
 
