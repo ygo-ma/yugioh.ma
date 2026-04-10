@@ -62,11 +62,13 @@ jobs:
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
             echo "db_name=$PROJECT_SLUG-staging" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-staging-cache" >> "$GITHUB_OUTPUT"
-            echo "storage_key_prefix=" >> "$GITHUB_OUTPUT"
+            echo "storage_prefix_public=" >> "$GITHUB_OUTPUT"
+            echo "storage_prefix_private=" >> "$GITHUB_OUTPUT"
           else
             echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-cache" >> "$GITHUB_OUTPUT"
-            echo "storage_key_prefix=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
+            echo "storage_prefix_public=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
+            echo "storage_prefix_private=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
           fi
 
           OWNER_SLUG=$(slugify "${{ github.repository_owner }}")
@@ -158,7 +160,8 @@ jobs:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
           SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
-          STORAGE_KEY_PREFIX: ${{ steps.branch.outputs.storage_key_prefix }}
+          STORAGE_PREFIX_PUBLIC: ${{ steps.branch.outputs.storage_prefix_public }}
+          STORAGE_PREFIX_PRIVATE: ${{ steps.branch.outputs.storage_prefix_private }}
           STORAGE_URL_PUBLIC: ${{ vars.STORAGE_URL_PUBLIC }}
           KV_STORAGE: ${{ github.ref_name != 'main' && 'CACHE' || '' }}
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
@@ -182,7 +185,8 @@ jobs:
           jq --arg env "$SENTRY_ENVIRONMENT" \
             --arg rel "$SENTRY_RELEASE" \
             --arg dist "$SENTRY_DIST" \
-            --arg prefix "$STORAGE_KEY_PREFIX" \
+            --arg prefix_public "$STORAGE_PREFIX_PUBLIC" \
+            --arg prefix_private "$STORAGE_PREFIX_PRIVATE" \
             --arg signing_key "$STORAGE_SIGNING_KEY" \
             --arg storage_url_public "$STORAGE_URL_PUBLIC" \
             --arg kv_storage "$KV_STORAGE" \
@@ -195,7 +199,8 @@ jobs:
             '.vars.SENTRY_ENVIRONMENT = $env |
              .vars.SENTRY_RELEASE = $rel |
              .vars.SENTRY_DIST = $dist |
-             .vars.STORAGE_KEY_PREFIX = $prefix |
+             .vars.STORAGE_PREFIX_PUBLIC = $prefix_public |
+             .vars.STORAGE_PREFIX_PRIVATE = $prefix_private |
              .vars.STORAGE_SIGNING_KEY = $signing_key |
              .vars.STORAGE_URL_PUBLIC = $storage_url_public |
              .vars.KV_STORAGE = $kv_storage |

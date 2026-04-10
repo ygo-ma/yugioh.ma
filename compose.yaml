@@ -25,6 +25,10 @@ x-app: &app
     # (e.g., Cloudflare R2 where S3 API and public access use different domains).
     # When empty, public files are served through the /media proxy.
     STORAGE_URL_PUBLIC: "${STORAGE_URL_PUBLIC:-}"
+    # Optional key prefix per bucket, for namespacing within a single S3
+    # bucket (e.g., per-prefix visibility rules, CI branch isolation).
+    STORAGE_PREFIX_PUBLIC: "${STORAGE_PREFIX_PUBLIC:-}"
+    STORAGE_PREFIX_PRIVATE: "${STORAGE_PREFIX_PRIVATE:-}"
 
     # ── Storage signing ──
     # HMAC key for signing private file URLs. When set, private files are

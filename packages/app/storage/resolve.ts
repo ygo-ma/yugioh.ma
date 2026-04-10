@@ -79,7 +79,7 @@ async function resolveBucket(
     });
   }
 
-  const keyPrefix = env.STORAGE_KEY_PREFIX ?? process.env.STORAGE_KEY_PREFIX;
+  const keyPrefix = BUCKETS[bucket].keyPrefix(env);
   if (keyPrefix) {
     storage = prefixStorage(storage, keyPrefix);
   }

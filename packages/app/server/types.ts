@@ -19,7 +19,8 @@ export interface CfBindings extends SentryBindings {
   STORAGE_URL_PUBLIC?: string;
   // R2 private bucket
   STORAGE_PRIVATE?: R2Bucket;
-  STORAGE_KEY_PREFIX?: string;
+  STORAGE_PREFIX_PUBLIC?: string;
+  STORAGE_PREFIX_PRIVATE?: string;
   STORAGE_SIGNING_KEY?: string;
   // Optional alternative R2 storage for testing or other purposes
   // Required to enable URL-signing for private R2 storage
