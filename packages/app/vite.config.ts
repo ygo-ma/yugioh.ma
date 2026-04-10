@@ -20,7 +20,12 @@ export default defineConfig(() => {
         errorHandler: "./server/error.ts",
         rolldownConfig: {
           external: isCloudflarePreset
-            ? ["iovalkey", "@libsql/client", "drizzle-orm/libsql"]
+            ? [
+                "iovalkey",
+                "@libsql/client",
+                "drizzle-orm/libsql",
+                "unstorage/drivers/fs",
+              ]
             : [],
         },
       }),
