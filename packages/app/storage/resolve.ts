@@ -55,11 +55,16 @@ async function resolveBucket(
   if (getRuntimeKey() === "workerd") {
     storage = await resolveCloudflareDriver(bucket, env);
   } else if (process.env.S3_ENDPOINT) {
+    if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
+      throw new Error(
+        "S3_ENDPOINT is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing",
+      );
+    }
     const { default: s3Driver } = await import("unstorage/drivers/s3");
     storage = createStorage({
       driver: s3Driver({
-        accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+        accessKeyId: process.env.S3_ACCESS_KEY_ID,
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
         endpoint: process.env.S3_ENDPOINT,
         region: process.env.S3_REGION ?? "auto",
         bucket: BUCKETS[bucket].s3BucketName(env),
