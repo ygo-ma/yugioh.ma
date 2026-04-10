@@ -1,13 +1,9 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import type { Database } from "./types";
 import * as schema from "./schema";
 
-const defaultPath = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "sqlite.db",
-);
+const defaultPath = resolve(import.meta.dirname, "..", "sqlite.db");
 
 export async function resolveSqlite(url?: string): Promise<Database> {
   const databaseUrl = url ?? pathToFileURL(defaultPath).toString();
