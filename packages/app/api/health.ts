@@ -19,7 +19,8 @@ async function checkStorage(env: AppEnv["Bindings"]): Promise<void> {
   try {
     const buckets = await resolveStorage(env);
     await Promise.all(
-      BUCKET_NAMES.map((name) => buckets[name].getKeys("", { maxDepth: 1 })),
+      // hasItem maps to HeadObject (Class B on R2)
+      BUCKET_NAMES.map((name) => buckets[name].hasItem("_health")),
     );
   } catch {
     throw new HTTPException(503, { message: "storage error" });
