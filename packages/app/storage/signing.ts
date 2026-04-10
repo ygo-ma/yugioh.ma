@@ -99,7 +99,8 @@ export async function verifyHmacToken(
     throw new HTTPException(403, { message: "missing signed URL token" });
   }
 
-  if (Number(expires) < Date.now() / 1000) {
+  const expiresAt = Number(expires);
+  if (!Number.isFinite(expiresAt) || expiresAt < Date.now() / 1000) {
     throw new HTTPException(403, { message: "signed URL has expired" });
   }
 
