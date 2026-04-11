@@ -21,7 +21,7 @@
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../server/types";
 import { BUCKETS, type BucketName } from "./buckets";
-import { urlFor } from "./url";
+import { storageKey, urlFor } from "./url";
 
 /**
  * Computes a URL-safe base64-encoded HMAC-SHA256 signature.
@@ -145,18 +145,23 @@ export async function presignUrl(
   key: string,
   ttlSeconds = 300,
 ): Promise<string> {
+  const resolved = storageKey(bucket, env, key);
+
   // If the bucket has a direct URL, use it — the proxy would 404 anyway.
   const directUrl = BUCKETS[bucket].baseUrl(env);
-  if (directUrl) return `${directUrl.replace(/\/$/u, "")}/${key}`;
+  if (directUrl) return `${directUrl.replace(/\/$/u, "")}/${resolved}`;
 
   const signingKey = env.STORAGE_SIGNING_KEY;
   if (signingKey) {
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
-    const token = await hmacSign(`${bucket}:${key}:${expires}`, signingKey);
-    return `/media/${bucket}/${key}?expires=${expires}&token=${token}`;
+    const token = await hmacSign(
+      `${bucket}:${resolved}:${expires}`,
+      signingKey,
+    );
+    return `/media/${bucket}/${resolved}?expires=${expires}&token=${token}`;
   }
 
-  const s3Url = await s3Presign(bucket, env, key, ttlSeconds);
+  const s3Url = await s3Presign(bucket, env, resolved, ttlSeconds);
   if (s3Url) return s3Url;
 
   if (BUCKETS[bucket].public) return urlFor(bucket, env, key);

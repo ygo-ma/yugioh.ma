@@ -37,6 +37,19 @@ export function isProxyDisabled(
 }
 
 /**
+ * Returns the actual key in the bucket, including the prefix if
+ * configured. Uses unstorage's `:` separator.
+ */
+export function storageKey(
+  bucket: BucketName,
+  env: AppEnv["Bindings"],
+  key: string,
+): string {
+  const prefix = BUCKETS[bucket].keyPrefix(env);
+  return prefix ? `${prefix}:${key}` : key;
+}
+
+/**
  * Returns a stable URL for a file. Bucket with a `baseUrl` configured →
  * direct URL. Otherwise → the backend proxy path.
  */
@@ -45,7 +58,8 @@ export function urlFor(
   env: AppEnv["Bindings"],
   key: string,
 ): string {
+  const resolved = storageKey(bucket, env, key);
   const base = BUCKETS[bucket].baseUrl(env);
-  if (base) return `${base.replace(/\/$/u, "")}/${key}`;
-  return `/media/${bucket}/${key}`;
+  if (base) return `${base.replace(/\/$/u, "")}/${resolved}`;
+  return `/media/${bucket}/${resolved}`;
 }
