@@ -1,17 +1,32 @@
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import type { AppEnv } from "../server/types";
+import { resolveCache } from "../cache";
 import { resolveDatabase } from "../db";
+import type { AppEnv } from "../server/types";
 
-const health = new Hono<AppEnv>();
-
-export default health.get("/", async (context) => {
+async function checkDatabase(env: AppEnv["Bindings"]) {
   try {
-    const db = await resolveDatabase(context.env);
+    const db = await resolveDatabase(env);
     await db.run(sql`SELECT 1`);
   } catch {
     throw new HTTPException(503, { message: "db unreachable" });
   }
+}
+
+async function checkCache(env: AppEnv["Bindings"]) {
+  try {
+    const cache = await resolveCache(env);
+    await cache.set("__health__", "1", 60);
+    await cache.get("__health__");
+  } catch {
+    throw new HTTPException(503, { message: "cache unreachable" });
+  }
+}
+
+const health = new Hono<AppEnv>();
+
+export default health.get("/", async (context) => {
+  await Promise.all([checkDatabase(context.env), checkCache(context.env)]);
   return context.json({ status: "ok" });
 });

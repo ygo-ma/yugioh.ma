@@ -60,10 +60,10 @@ jobs:
           fi
 
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
-            echo "db_name=$PROJECT_SLUG-staging" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PROJECT_SLUG-staging-db" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-staging-cache" >> "$GITHUB_OUTPUT"
           else
-            echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
+            echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-db" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-cache" >> "$GITHUB_OUTPUT"
           fi
 
