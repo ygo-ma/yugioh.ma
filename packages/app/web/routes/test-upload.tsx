@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { apiUrl } from "../api-client";
 
 interface TestImageData {
@@ -7,14 +8,31 @@ interface TestImageData {
   url: string | null;
 }
 
+const searchSchema = z.object({
+  // TODO: replace with flash messages once form error handling is implemented
+  error: z.string().optional(),
+});
+
 // oxlint-disable-next-line typescript-eslint/no-unsafe-assignment
 const uploadTestImage = createServerFn({ method: "POST" }).handler(
   async ({ data }) => {
-    await fetch(await apiUrl("/api/v1/test-upload"), {
+    const response = await fetch(await apiUrl("/api/v1/test-upload"), {
       method: "POST",
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
       body: data as unknown as FormData,
     });
+
+    if (!response.ok) {
+      // TODO: replace with flash messages once form error handling is implemented
+      const message = await response.text();
+      // oxlint-disable-next-line typescript-eslint/only-throw-error -- TanStack Start redirect pattern
+      throw redirect({
+        to: "/test-upload",
+        search: {
+          error: message || `Upload failed (${String(response.status)})`,
+        },
+      });
+    }
 
     // oxlint-disable-next-line typescript-eslint/only-throw-error -- TanStack Start redirect pattern
     throw redirect({ to: "/test-upload" });
@@ -22,6 +40,7 @@ const uploadTestImage = createServerFn({ method: "POST" }).handler(
 );
 
 export const Route = createFileRoute("/test-upload")({
+  validateSearch: searchSchema,
   loader: async () => {
     const response = await fetch(await apiUrl("/api/v1/test-upload"));
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
@@ -32,6 +51,7 @@ export const Route = createFileRoute("/test-upload")({
 
 function TestUpload() {
   const loaderData = Route.useLoaderData();
+  const { error } = Route.useSearch();
 
   return (
     <main>
@@ -39,6 +59,12 @@ function TestUpload() {
       <p>
         <Link to="/">← Back to home</Link>
       </p>
+
+      {error && (
+        <p role="alert" style={{ color: "red" }}>
+          {error}
+        </p>
+      )}
 
       {loaderData.exists && loaderData.url ? (
         <>
