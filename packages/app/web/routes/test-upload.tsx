@@ -1,25 +1,16 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestUrl } from "@tanstack/react-start/server";
+import { apiUrl } from "../api-client";
 
 interface TestImageData {
   exists: boolean;
   url: string | null;
 }
 
-const loadTestImage = createServerFn({ method: "GET" }).handler(
-  async (): Promise<TestImageData> => {
-    const origin = new URL(getRequestUrl()).origin;
-    const response = await fetch(`${origin}/api/v1/test-upload`);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-    return response.json() as Promise<TestImageData>;
-  },
-);
-
+// oxlint-disable-next-line typescript-eslint/no-unsafe-assignment
 const uploadTestImage = createServerFn({ method: "POST" }).handler(
   async ({ data }) => {
-    const origin = new URL(getRequestUrl()).origin;
-    await fetch(`${origin}/api/v1/test-upload`, {
+    await fetch(await apiUrl("/api/v1/test-upload"), {
       method: "POST",
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
       body: data as unknown as FormData,
@@ -31,7 +22,11 @@ const uploadTestImage = createServerFn({ method: "POST" }).handler(
 );
 
 export const Route = createFileRoute("/test-upload")({
-  loader: () => loadTestImage(),
+  loader: async () => {
+    const response = await fetch(await apiUrl("/api/v1/test-upload"));
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+    return response.json() as Promise<TestImageData>;
+  },
   component: TestUpload,
 });
 
@@ -63,6 +58,7 @@ function TestUpload() {
 
       <h2>Upload</h2>
       <form
+        // oxlint-disable-next-line typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-type-assertion
         action={uploadTestImage.url}
         method="post"
         encType="multipart/form-data"
