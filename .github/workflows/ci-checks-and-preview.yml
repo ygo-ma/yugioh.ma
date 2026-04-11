@@ -62,13 +62,9 @@ jobs:
           if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
             echo "db_name=$PROJECT_SLUG-staging-db" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-staging-cache" >> "$GITHUB_OUTPUT"
-            echo "storage_prefix_public=" >> "$GITHUB_OUTPUT"
-            echo "storage_prefix_private=" >> "$GITHUB_OUTPUT"
           else
             echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-db" >> "$GITHUB_OUTPUT"
             echo "kv_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-cache" >> "$GITHUB_OUTPUT"
-            echo "storage_prefix_public=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
-            echo "storage_prefix_private=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
           fi
 
           OWNER_SLUG=$(slugify "${{ github.repository_owner }}")
@@ -81,8 +77,6 @@ jobs:
           SENTRY_ENV=${{ github.event_name == 'push' && 'staging' || 'preview' }}
 
           echo "branch_slug=$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sentry_environment=$SENTRY_ENV" >> "$GITHUB_OUTPUT"
           echo "sentry_release=$VERSION" >> "$GITHUB_OUTPUT"
           echo "sentry_dist=$SENTRY_ENV-$SHORT_SHA" >> "$GITHUB_OUTPUT"
@@ -161,8 +155,6 @@ jobs:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
           SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
-          STORAGE_PREFIX_PUBLIC: ${{ steps.branch.outputs.storage_prefix_public }}
-          STORAGE_PREFIX_PRIVATE: ${{ steps.branch.outputs.storage_prefix_private }}
           STORAGE_URL_PUBLIC: ${{ vars.STORAGE_URL_PUBLIC }}
           KV_STORAGE: ${{ github.ref_name != 'main' && 'CACHE' || '' }}
           S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
@@ -183,13 +175,20 @@ jobs:
             STORAGE_SIGNING_KEY="${GITHUB_REPOSITORY}:${PR_NUMBER:-main}:${BRANCH_SLUG}"
           fi
 
+          # Per-bucket key prefix: branch slug for preview, empty for staging.
+          if [ "${{ github.ref_name }}" = "main" ] && [ "${{ github.event_name }}" = "push" ]; then
+            STORAGE_PREFIX=""
+          else
+            STORAGE_PREFIX="$BRANCH_SLUG"
+          fi
+
           # Build a JSON object of all runtime vars, then filter out
           # empty values so they don't override the app's defaults.
           jq --arg env "$SENTRY_ENVIRONMENT" \
             --arg rel "$SENTRY_RELEASE" \
             --arg dist "$SENTRY_DIST" \
-            --arg prefix_public "$STORAGE_PREFIX_PUBLIC" \
-            --arg prefix_private "$STORAGE_PREFIX_PRIVATE" \
+            --arg prefix_public "$STORAGE_PREFIX" \
+            --arg prefix_private "$STORAGE_PREFIX" \
             --arg signing_key "$STORAGE_SIGNING_KEY" \
             --arg storage_url_public "$STORAGE_URL_PUBLIC" \
             --arg kv_storage "$KV_STORAGE" \
@@ -217,8 +216,6 @@ jobs:
              } | with_entries(select(.value != "")))' \
             wrangler.json > wrangler.json.tmp
           mv wrangler.json.tmp wrangler.json
-
-          cat wrangler.json
 
       - name: Build
         # Note: this should happen after any step that changes wrangler.json
