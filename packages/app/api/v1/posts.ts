@@ -24,7 +24,7 @@ export default postsRouter
   .get("/", async (context) => {
     const cache = context.var.cache;
     const cached = await cache.get(CACHE_KEY);
-    if (cached !== null) {
+    if (cached !== undefined) {
       try {
         const parsed = cacheSchema.parse(JSON.parse(cached));
         context.header("X-Cache", "HIT");

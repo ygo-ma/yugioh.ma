@@ -6,7 +6,7 @@ export async function createValkeyCache(url: string): Promise<Cache> {
 
   return {
     async get(key) {
-      return client.get(key);
+      return (await client.get(key)) ?? undefined;
     },
     async set(key, value, ttl) {
       if (ttl) await client.set(key, value, "EX", ttl);

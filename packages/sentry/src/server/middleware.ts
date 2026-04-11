@@ -29,7 +29,6 @@ const stackParser = createStackParser(nodeStackLineParser());
 export default defineEventHandler((event) => {
   if (!isInitialized()) {
     // Set by the host app's env middleware (e.g. 00-env.ts).
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const env = event.context.env as SentryBindings;
     const dsn = env.SENTRY_DSN;
     if (!dsn) return;
