@@ -17,7 +17,7 @@ async function checkDatabase(env: AppEnv["Bindings"]) {
 async function checkCache(env: AppEnv["Bindings"]) {
   try {
     const cache = await resolveCache(env);
-    await cache.set("__health__", "1", 5);
+    await cache.set("__health__", "1", 60);
     await cache.get("__health__");
   } catch {
     throw new HTTPException(503, { message: "cache unreachable" });
