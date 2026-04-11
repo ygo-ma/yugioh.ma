@@ -28,12 +28,9 @@ export default testUpload
           : urlFor(bucket, context.env, TEST_KEY);
     }
 
-    return context.json({
-      exists,
-      bucket,
-      url,
-      uploadedAt: typeof meta?.uploadedAt === "string" ? meta.uploadedAt : null,
-    });
+    const uploadedAt =
+      typeof meta?.uploadedAt === "number" ? meta.uploadedAt : null;
+    return context.json({ exists, bucket, url, uploadedAt });
   })
   .post("/", async (context) => {
     const body = await context.req.parseBody();

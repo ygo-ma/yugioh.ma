@@ -7,7 +7,7 @@ interface TestImageData {
   exists: boolean;
   bucket: string;
   url: string | null;
-  uploadedAt: string | null;
+  uploadedAt: number | null;
 }
 
 const searchSchema = z.object({
@@ -67,7 +67,7 @@ function ImagePreview({
 }: {
   bucket: string;
   url: string;
-  uploadedAt: string | null;
+  uploadedAt: number | null;
 }) {
   const src = bucket === "public" ? `${url}?v=${uploadedAt}` : url;
   return (

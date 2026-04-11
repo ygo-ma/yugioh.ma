@@ -11,7 +11,7 @@ export interface FileMeta {
   contentType: string;
   size: number;
   originalName: string;
-  uploadedAt: string;
+  uploadedAt: number;
 }
 
 /** UUID v7 key (time-sortable) with the original file extension preserved. */
@@ -45,7 +45,7 @@ export async function storeFile(
     contentType: file.type || "application/octet-stream",
     size: file.size,
     originalName: file.name,
-    uploadedAt: new Date().toISOString(),
+    uploadedAt: Date.now(),
     ...options?.meta,
   });
 
