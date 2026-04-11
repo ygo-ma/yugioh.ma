@@ -181,7 +181,8 @@ jobs:
         run: |
           pnpm exec wrangler pages deploy dist \
             --project-name="$PROJECT_SLUG-staging" \
-            --branch="$BRANCH"
+            --branch="$BRANCH" \
+            --commit-dirty=true
 
           if [[ ! -s "$WRANGLER_OUTPUT_FILE_PATH" ]]; then
             echo "::error::wrangler did not write structured output to $WRANGLER_OUTPUT_FILE_PATH (env var unsupported by this wrangler version?)" >&2
