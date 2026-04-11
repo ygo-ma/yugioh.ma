@@ -33,22 +33,17 @@ export const BUCKETS = {
   public: {
     public: true,
     r2Binding: (env: CfBindings) => env.STORAGE_PUBLIC,
-    s3BucketName: (env: CfBindings) =>
-      env.S3_BUCKET_PUBLIC ?? process.env.S3_BUCKET_PUBLIC ?? "acme-public",
-    baseUrl: (env: CfBindings) =>
-      env.STORAGE_URL_PUBLIC ?? process.env.STORAGE_URL_PUBLIC ?? null,
-    keyPrefix: (env: CfBindings) =>
-      env.STORAGE_PREFIX_PUBLIC ?? process.env.STORAGE_PREFIX_PUBLIC ?? null,
+    s3BucketName: (env: CfBindings) => env.S3_BUCKET_PUBLIC ?? "acme-public",
+    baseUrl: (env: CfBindings) => env.STORAGE_URL_PUBLIC ?? null,
+    keyPrefix: (env: CfBindings) => env.STORAGE_PREFIX_PUBLIC ?? null,
   } satisfies BucketConfig,
   /** Private user content — message attachments, admin documents, … */
   private: {
     public: false,
     r2Binding: (env: CfBindings) => env.STORAGE_PRIVATE,
-    s3BucketName: (env: CfBindings) =>
-      env.S3_BUCKET_PRIVATE ?? process.env.S3_BUCKET_PRIVATE ?? "acme-private",
+    s3BucketName: (env: CfBindings) => env.S3_BUCKET_PRIVATE ?? "acme-private",
     baseUrl: () => null,
-    keyPrefix: (env: CfBindings) =>
-      env.STORAGE_PREFIX_PRIVATE ?? process.env.STORAGE_PREFIX_PRIVATE ?? null,
+    keyPrefix: (env: CfBindings) => env.STORAGE_PREFIX_PRIVATE ?? null,
   } satisfies BucketConfig,
 };
 

@@ -1,4 +1,5 @@
-import { createApiEventHandler } from "@acme/sentry/api";
+import { createApiEventHandler } from "../../handler";
 import app from "../../../media/app";
+import type { AppEnv } from "../../types";
 
-export default createApiEventHandler(app);
+export default createApiEventHandler<AppEnv>(app);

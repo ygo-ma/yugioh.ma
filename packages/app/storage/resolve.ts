@@ -51,12 +51,11 @@ async function tryS3(
   bucket: BucketName,
   env: Env,
 ): Promise<Storage | undefined> {
-  const endpoint = env.S3_ENDPOINT ?? process.env.S3_ENDPOINT;
+  const endpoint = env.S3_ENDPOINT;
   if (!endpoint) return undefined;
 
-  const accessKeyId = env.S3_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey =
-    env.S3_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY;
+  const accessKeyId = env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = env.S3_SECRET_ACCESS_KEY;
   if (!accessKeyId || !secretAccessKey) {
     throw new Error(
       "S3_ENDPOINT is set but S3_ACCESS_KEY_ID or S3_SECRET_ACCESS_KEY is missing",
@@ -69,7 +68,7 @@ async function tryS3(
       accessKeyId,
       secretAccessKey,
       endpoint,
-      region: env.S3_REGION ?? process.env.S3_REGION ?? "auto",
+      region: env.S3_REGION ?? "auto",
       bucket: BUCKETS[bucket].s3BucketName(env),
     }),
   });

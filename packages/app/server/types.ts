@@ -8,16 +8,12 @@ import type { Cache } from "../cache/types";
 import type { Database } from "../db/types";
 import type { Buckets } from "../storage/types";
 
-export interface CfBindings extends SentryBindings {
+export interface EnvVars extends SentryBindings {
   // ── Database ──
-  DB?: D1Database;
+  DATABASE_URL?: string;
 
   // ── Cache ──
-  CACHE?: KVNamespace;
-
-  // ── Storage: R2 bindings (Cloudflare only) ──
-  STORAGE_PUBLIC?: R2Bucket;
-  STORAGE_PRIVATE?: R2Bucket;
+  CACHE_URL?: string;
 
   // ── Storage: direct URL for the public bucket ──
   // CDN, R2 custom domain, etc. When set, the /media proxy returns 404
@@ -55,6 +51,13 @@ export interface CfBindings extends SentryBindings {
   BASIC_AUTH_CREDENTIALS?: string;
 }
 
+export interface CfBindings extends EnvVars {
+  DB?: D1Database;
+  CACHE?: KVNamespace;
+  STORAGE_PUBLIC?: R2Bucket;
+  STORAGE_PRIVATE?: R2Bucket;
+}
+
 export interface AppEnv {
   Bindings: CfBindings;
   Variables: {
@@ -62,4 +65,10 @@ export interface AppEnv {
     cache: Cache;
     storage: Buckets;
   };
+}
+
+declare module "nitro/h3" {
+  interface H3EventContext {
+    env: EnvVars;
+  }
 }

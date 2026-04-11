@@ -58,10 +58,9 @@ async function s3Presign(
   key: string,
   ttlSeconds: number,
 ): Promise<string | null> {
-  const endpoint = env.S3_ENDPOINT ?? process.env.S3_ENDPOINT;
-  const accessKeyId = env.S3_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey =
-    env.S3_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY;
+  const endpoint = env.S3_ENDPOINT;
+  const accessKeyId = env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = env.S3_SECRET_ACCESS_KEY;
   if (!endpoint || !accessKeyId || !secretAccessKey) return null;
 
   const { AwsClient } = await import("aws4fetch");
@@ -71,7 +70,7 @@ async function s3Presign(
   const client = new AwsClient({
     accessKeyId,
     secretAccessKey,
-    region: env.S3_REGION ?? process.env.S3_REGION ?? "auto",
+    region: env.S3_REGION ?? "auto",
     service: "s3",
   });
   // signQuery puts the signature in the URL query string (presigned URL)
@@ -144,7 +143,7 @@ export async function presignUrl(
   key: string,
   ttlSeconds = 300,
 ): Promise<string> {
-  const signingKey = env.STORAGE_SIGNING_KEY ?? process.env.STORAGE_SIGNING_KEY;
+  const signingKey = env.STORAGE_SIGNING_KEY;
   if (signingKey) {
     const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
     const token = await hmacSign(`${bucket}:${key}:${expires}`, signingKey);

@@ -3,9 +3,7 @@ import { BUCKETS, type BucketName } from "./buckets";
 
 function hasS3Creds(env: AppEnv["Bindings"]): boolean {
   return Boolean(
-    (env.S3_ENDPOINT ?? process.env.S3_ENDPOINT) &&
-    (env.S3_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID) &&
-    (env.S3_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY),
+    env.S3_ENDPOINT && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY,
   );
 }
 
@@ -24,7 +22,7 @@ export function isProxyDisabled(
 
   // HMAC signing key set — admin wants the proxy path (e.g., S3
   // endpoint is internal and not reachable from the browser).
-  if (env.STORAGE_SIGNING_KEY ?? process.env.STORAGE_SIGNING_KEY) {
+  if (env.STORAGE_SIGNING_KEY) {
     return false;
   }
 

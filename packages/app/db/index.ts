@@ -18,7 +18,7 @@ export async function resolveDatabase(
 
   // Resolve the right sqlite-based database on Node.js
   const { resolveSqlite } = await import("./sqlite");
-  return resolveSqlite(process.env.DATABASE_URL);
+  return resolveSqlite(env.DATABASE_URL);
 }
 
 let cachedDb: Database | null = null;

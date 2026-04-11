@@ -25,8 +25,7 @@ function buildGetHandler(bucket: BucketName) {
 
     // Private buckets require a valid HMAC token.
     if (!BUCKETS[bucket].public) {
-      const signingKey =
-        context.env.STORAGE_SIGNING_KEY ?? process.env.STORAGE_SIGNING_KEY;
+      const signingKey = context.env.STORAGE_SIGNING_KEY;
       if (!signingKey) {
         throw new HTTPException(503, {
           message: "private storage access is not configured",
