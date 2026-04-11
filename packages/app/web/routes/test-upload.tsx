@@ -69,7 +69,7 @@ function TestUpload() {
         <>
           <h2>Current image</h2>
           <img
-            src={`${url}?v=${uploadedAt ?? Math.random()}`}
+            src={`${url}?v=${uploadedAt}`}
             alt="Test upload"
             style={{ maxWidth: "100%", border: "1px solid #ccc" }}
           />
