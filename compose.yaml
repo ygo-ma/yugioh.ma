@@ -35,7 +35,7 @@ x-app: &app
     # served through the /media proxy with HMAC token verification instead
     # of S3 presigned URLs. Required here because MinIO is internal and
     # not reachable from the browser.
-    STORAGE_SIGNING_KEY: "${STORAGE_SIGNING_KEY:?required}"
+    STORAGE_SIGNING_KEY: "${STORAGE_SIGNING_KEY:-}"
   depends_on:
     sqld:
       condition: service_healthy
