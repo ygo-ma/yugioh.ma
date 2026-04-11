@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../../server/types";
 import { urlFor } from "../../storage";
-import { storeFile } from "../../storage/helpers";
+import { type FileMeta, metaKey, storeFile } from "../../storage/helpers";
 
 const TEST_KEY = "test-image";
 
@@ -10,10 +10,15 @@ const testUpload = new Hono<AppEnv>();
 
 export default testUpload
   .get("/", async (context) => {
-    const exists = await context.var.storage.public.hasItem(TEST_KEY);
+    const storage = context.var.storage.public;
+    const exists = await storage.hasItem(TEST_KEY);
+    const meta = exists
+      ? await storage.getItem<FileMeta>(metaKey(TEST_KEY))
+      : null;
     return context.json({
       exists,
       url: exists ? urlFor("public", context.env, TEST_KEY) : null,
+      uploadedAt: meta?.uploadedAt ?? null,
     });
   })
   .post("/", async (context) => {

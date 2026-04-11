@@ -6,6 +6,7 @@ import { apiUrl } from "../api-client";
 interface TestImageData {
   exists: boolean;
   url: string | null;
+  uploadedAt: string | null;
 }
 
 const searchSchema = z.object({
@@ -48,7 +49,7 @@ export const Route = createFileRoute("/test-upload")({
 });
 
 function TestUpload() {
-  const loaderData = Route.useLoaderData();
+  const { exists, url, uploadedAt } = Route.useLoaderData();
   const { error } = Route.useSearch();
 
   return (
@@ -64,16 +65,16 @@ function TestUpload() {
         </p>
       )}
 
-      {loaderData.exists && loaderData.url ? (
+      {exists && url ? (
         <>
           <h2>Current image</h2>
           <img
-            src={loaderData.url}
+            src={`${url}?v=${uploadedAt ?? Math.random()}`}
             alt="Test upload"
             style={{ maxWidth: "100%", border: "1px solid #ccc" }}
           />
           <p>
-            <code>{loaderData.url}</code>
+            <code>{url}</code>
           </p>
         </>
       ) : (
