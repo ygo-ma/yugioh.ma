@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { AppEnv } from "../../server/types";
-import { storageMiddleware, urlFor } from "../../storage";
+import { urlFor } from "../../storage";
 import { storeFile } from "../../storage/helpers";
 
 const TEST_KEY = "test-image";
@@ -9,7 +9,6 @@ const TEST_KEY = "test-image";
 const testUpload = new Hono<AppEnv>();
 
 export default testUpload
-  .use(storageMiddleware)
   .get("/", async (context) => {
     const exists = await context.var.storage.public.hasItem(TEST_KEY);
     return context.json({
