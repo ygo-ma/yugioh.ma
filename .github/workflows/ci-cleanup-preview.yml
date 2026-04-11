@@ -29,7 +29,7 @@ jobs:
           if [ -z "$BRANCH_SLUG" ]; then
             BRANCH_SLUG="pr-${{ github.event.pull_request.number }}"
           fi
-          echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG" >> "$GITHUB_OUTPUT"
+          echo "db_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-db" >> "$GITHUB_OUTPUT"
           echo "kv_name=$PROJECT_SLUG-preview-$BRANCH_SLUG-cache" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
