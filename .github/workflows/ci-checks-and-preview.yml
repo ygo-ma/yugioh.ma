@@ -208,6 +208,7 @@ jobs:
         run: |
           for ENV in preview production; do
             echo "${{ secrets.SENTRY_DSN }}" | pnpm exec wrangler pages secret put SENTRY_DSN --project-name=${{ steps.branch.outputs.project_slug }}-staging --env $ENV
+            echo "${{ secrets.BASIC_AUTH_CREDENTIALS }}" | pnpm exec wrangler pages secret put BASIC_AUTH_CREDENTIALS --project-name=${{ steps.branch.outputs.project_slug }}-staging --env $ENV
           done
 
       - name: Health check
