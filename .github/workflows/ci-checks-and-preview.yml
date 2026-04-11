@@ -198,7 +198,7 @@ jobs:
             --arg s3_region "$S3_REGION" \
             --arg s3_bucket_public "$S3_BUCKET_PUBLIC" \
             --arg s3_bucket_private "$S3_BUCKET_PRIVATE" \
-            '.vars += ({
+            '.vars = (.vars // {}) + ({
                SENTRY_ENVIRONMENT: $env,
                SENTRY_RELEASE: $rel,
                SENTRY_DIST: $dist,
