@@ -160,8 +160,8 @@ jobs:
           SENTRY_ENVIRONMENT: ${{ steps.branch.outputs.sentry_environment }}
           SENTRY_RELEASE: ${{ steps.branch.outputs.sentry_release }}
           SENTRY_DIST: ${{ steps.branch.outputs.sentry_dist }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG || steps.branch.outputs.owner_slug }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT || steps.branch.outputs.project_slug }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG || secrets.SENTRY_ORG || steps.branch.outputs.owner_slug }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || secrets.SENTRY_PROJECT || steps.branch.outputs.project_slug }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: pnpm run build:preview
 

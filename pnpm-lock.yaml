@@ -240,6 +240,9 @@ importers:
 
   packages/sentry:
     dependencies:
+      '@jridgewell/remapping':
+        specifier: ^2.3.5
+        version: 2.3.5
       '@sentry/cloudflare':
         specifier: 'catalog:'
         version: 10.48.0(@cloudflare/workers-types@4.20260411.1)

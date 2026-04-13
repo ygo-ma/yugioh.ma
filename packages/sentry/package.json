@@ -14,6 +14,7 @@
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {
+    "@jridgewell/remapping": "^2.3.5",
     "@sentry/cloudflare": "catalog:",
     "@sentry/core": "catalog:",
     "@sentry/react": "catalog:",
