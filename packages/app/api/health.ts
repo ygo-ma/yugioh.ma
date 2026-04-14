@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { resolveCache } from "../cache";
+import { resolveCache } from "@acme/cache";
 import { resolveDatabase } from "../db";
 import type { AppEnv } from "../server/types";
 import { resolveStorage } from "../storage";

@@ -1,14 +1,12 @@
 import { getRuntimeKey } from "hono/adapter";
-import { createMiddleware } from "hono/factory";
-import type { AppEnv } from "../server/types";
-import type { Cache } from "./types";
+import type { Cache, CacheBindings } from "./types";
 
-export type { Cache } from "./types";
-
-export async function resolveCache(env: AppEnv["Bindings"]): Promise<Cache> {
+export async function resolveCache(env: CacheBindings): Promise<Cache> {
   // On Cloudflare Workers/Pages, use the KV namespace binding.
   if (getRuntimeKey() === "workerd") {
-    if (!env.CACHE) throw new Error("Please add a KV binding named 'CACHE'");
+    if (!env.CACHE) {
+      throw new Error("Please add a KV binding named 'CACHE'");
+    }
 
     const { createCloudflareCache } = await import("./cloudflare");
     return createCloudflareCache(env.CACHE);
@@ -24,12 +22,3 @@ export async function resolveCache(env: AppEnv["Bindings"]): Promise<Cache> {
   const { createMemoryCache } = await import("./memory");
   return createMemoryCache();
 }
-
-let cachedCache: Cache | null = null;
-export const cacheMiddleware = createMiddleware<AppEnv>(
-  async (context, next) => {
-    cachedCache ??= await resolveCache(context.env);
-    context.set("cache", cachedCache);
-    await next();
-  },
-);

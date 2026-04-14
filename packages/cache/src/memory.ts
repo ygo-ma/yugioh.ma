@@ -12,7 +12,9 @@ export function createMemoryCache(): Cache {
     // oxlint-disable-next-line typescript/require-await
     async get(key) {
       const entry = store.get(key);
-      if (!entry) return;
+      if (!entry) {
+        return;
+      }
 
       if (entry.expiresAt && Date.now() > entry.expiresAt) {
         store.delete(key);

@@ -170,6 +170,9 @@ importers:
 
   packages/app:
     dependencies:
+      '@acme/cache':
+        specifier: workspace:*
+        version: link:../cache
       '@acme/db':
         specifier: workspace:*
         version: link:../db
@@ -191,9 +194,6 @@ importers:
       hono:
         specifier: 'catalog:'
         version: 4.12.12
-      iovalkey:
-        specifier: 'catalog:'
-        version: 0.3.3
       unstorage:
         specifier: 'catalog:'
         version: 2.0.0-alpha.7(aws4fetch@1.0.20)(db0@0.3.4(@libsql/client@0.17.2)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260412.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3)
@@ -255,6 +255,28 @@ importers:
       wrangler:
         specifier: 'catalog:'
         version: 4.81.1(@cloudflare/workers-types@4.20260412.1)
+
+  packages/cache:
+    dependencies:
+      iovalkey:
+        specifier: 'catalog:'
+        version: 0.3.3
+    devDependencies:
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 4.20260412.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.2
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.12
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
 
   packages/db:
     dependencies:

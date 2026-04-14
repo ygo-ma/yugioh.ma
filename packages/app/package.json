@@ -18,6 +18,7 @@
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {
+    "@acme/cache": "workspace:*",
     "@acme/db": "workspace:*",
     "@acme/sentry": "workspace:*",
     "@acme/ui": "workspace:*",
@@ -25,7 +26,6 @@
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
     "hono": "catalog:",
-    "iovalkey": "catalog:",
     "unstorage": "catalog:",
     "uuid": "catalog:",
     "zod": "catalog:"
