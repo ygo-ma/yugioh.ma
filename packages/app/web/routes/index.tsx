@@ -16,6 +16,8 @@ function Home() {
       <br />
       <Link to="/sentry-test">Sentry Test</Link>
       <br />
+      <Link to="/test-upload">Storage Upload Test</Link>
+      <br />
       <br />
       <Button
         onClick={() => {

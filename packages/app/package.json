@@ -21,10 +21,13 @@
     "@acme/sentry": "workspace:*",
     "@acme/ui": "workspace:*",
     "@libsql/client": "catalog:",
+    "aws4fetch": "catalog:",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
     "hono": "catalog:",
     "iovalkey": "catalog:",
+    "unstorage": "catalog:",
+    "uuid": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

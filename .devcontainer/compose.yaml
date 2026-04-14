@@ -8,3 +8,4 @@ services:
       dockerfile: .devcontainer/Dockerfile
     environment:
       TURBO_TELEMETRY_DISABLED: "1"
+      STORAGE_SIGNING_KEY: "devcontainer-dummy-signing-key"

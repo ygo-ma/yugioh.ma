@@ -9,6 +9,7 @@ node_modules
 # runtime files
 run/
 *.db
+data/
 
 # OS
 .DS_Store

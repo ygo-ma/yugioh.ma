@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestUploadRouteImport } from './routes/test-upload'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SentryTestIndexRouteImport } from './routes/sentry-test/index'
 import { Route as SentryTestSsrErrorRouteImport } from './routes/sentry-test/ssr-error'
 import { Route as SentryTestErrorRouteImport } from './routes/sentry-test/error'
 
+const TestUploadRoute = TestUploadRouteImport.update({
+  id: '/test-upload',
+  path: '/test-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const SentryTestErrorRoute = SentryTestErrorRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/test-upload': typeof TestUploadRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
   '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test/': typeof SentryTestIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/test-upload': typeof TestUploadRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
   '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test': typeof SentryTestIndexRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/test-upload': typeof TestUploadRoute
   '/sentry-test/error': typeof SentryTestErrorRoute
   '/sentry-test/ssr-error': typeof SentryTestSsrErrorRoute
   '/sentry-test/': typeof SentryTestIndexRoute
@@ -58,14 +67,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/test-upload'
     | '/sentry-test/error'
     | '/sentry-test/ssr-error'
     | '/sentry-test/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sentry-test/error' | '/sentry-test/ssr-error' | '/sentry-test'
+  to:
+    | '/'
+    | '/test-upload'
+    | '/sentry-test/error'
+    | '/sentry-test/ssr-error'
+    | '/sentry-test'
   id:
     | '__root__'
     | '/'
+    | '/test-upload'
     | '/sentry-test/error'
     | '/sentry-test/ssr-error'
     | '/sentry-test/'
@@ -73,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TestUploadRoute: typeof TestUploadRoute
   SentryTestErrorRoute: typeof SentryTestErrorRoute
   SentryTestSsrErrorRoute: typeof SentryTestSsrErrorRoute
   SentryTestIndexRoute: typeof SentryTestIndexRoute
@@ -80,6 +97,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test-upload': {
+      id: '/test-upload'
+      path: '/test-upload'
+      fullPath: '/test-upload'
+      preLoaderRoute: typeof TestUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -113,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TestUploadRoute: TestUploadRoute,
   SentryTestErrorRoute: SentryTestErrorRoute,
   SentryTestSsrErrorRoute: SentryTestSsrErrorRoute,
   SentryTestIndexRoute: SentryTestIndexRoute,

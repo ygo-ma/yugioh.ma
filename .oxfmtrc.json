@@ -4,7 +4,8 @@
     "**/routeTree.gen.ts",
     "**/.turbo/",
     "**/node_modules/",
-    "**/db/migrations/meta/"
+    "**/db/migrations/meta/",
+    "**/data/storage/"
   ],
   "printWidth": 80,
   "trailingComma": "none",

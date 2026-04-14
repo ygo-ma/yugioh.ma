@@ -1,13 +1,13 @@
 import { withSentry } from "@acme/sentry/api";
 import type { Env, Hono } from "hono";
 import { defineEventHandler } from "nitro/h3";
-import app from "../../api/app";
-import { createEnvProxy } from "../env";
-import type { AppEnv } from "../types";
+import { createEnvProxy } from "./env";
 
 type Bindings<HonoEnv extends Env> = NonNullable<HonoEnv["Bindings"]>;
 
-function createApiEventHandler<HonoEnv extends Env>(honoApp: Hono<HonoEnv>) {
+export function createApiEventHandler<HonoEnv extends Env>(
+  honoApp: Hono<HonoEnv>,
+) {
   return defineEventHandler(({ runtime, req }) => {
     const cfEnv = (runtime?.cloudflare?.env ?? {}) as Bindings<HonoEnv>;
     const env = createEnvProxy(cfEnv);
@@ -18,5 +18,3 @@ function createApiEventHandler<HonoEnv extends Env>(honoApp: Hono<HonoEnv>) {
     );
   });
 }
-
-export default createApiEventHandler<AppEnv>(app);

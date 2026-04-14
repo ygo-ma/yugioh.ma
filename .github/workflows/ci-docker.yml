@@ -30,6 +30,8 @@ jobs:
   docker-compose:
     name: Works with docker compose
     runs-on: ubuntu-latest
+    env:
+      STORAGE_SIGNING_KEY: ci-dummy-key
     steps:
       - name: Checkout
         uses: actions/checkout@v6
