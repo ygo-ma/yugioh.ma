@@ -345,8 +345,11 @@ Set in **Settings → Secrets and variables → Actions**.
 
 All deployment, Sentry, and storage steps are skipped when their
 secrets/variables are absent. The minimum viable deployment needs
-only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` — storage
-falls back to the KV namespace automatically.
+only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` — the CI
+workflow sets `KV_STORAGE=CACHE` on preview branches automatically,
+so storage works out of the box for PRs. Staging and production
+need explicit storage configuration (R2 bindings, S3, or manual
+`KV_STORAGE`).
 
 ## Conventions
 
