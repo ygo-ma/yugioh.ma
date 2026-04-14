@@ -1,29 +1,15 @@
-import { getRuntimeKey } from "hono/adapter";
-import { createMiddleware } from "hono/factory";
-import type { AppEnv } from "../server/types";
-import type { Database } from "./types";
+import { createDbMiddleware } from "@acme/db/middleware";
+import {
+  resolveDatabase as resolve,
+  type Database as GenericDb,
+} from "@acme/db";
+import type { DbBindings } from "@acme/db";
 import * as schema from "./schema";
 
-export async function resolveDatabase(
-  env: AppEnv["Bindings"],
-): Promise<Database> {
-  // On Cloudflare Workers/Pages without a D1 binding, there's no way to
-  // connect to a database — SQLite/libsql require a Node.js environment.
-  if (getRuntimeKey() === "workerd") {
-    if (!env.DB) throw new Error("Please add a D1 binding named 'DB'");
+export type Database = GenericDb<typeof schema>;
 
-    const { drizzle } = await import("drizzle-orm/d1");
-    return drizzle(env.DB, { schema });
-  }
-
-  // Resolve the right sqlite-based database on Node.js
-  const { resolveSqlite } = await import("./sqlite");
-  return resolveSqlite(env.DATABASE_URL);
+export async function resolveDatabase(env: DbBindings): Promise<Database> {
+  return resolve(env, schema);
 }
 
-let cachedDb: Database | null = null;
-export const dbMiddleware = createMiddleware<AppEnv>(async (context, next) => {
-  cachedDb ??= await resolveDatabase(context.env);
-  context.set("db", cachedDb);
-  await next();
-});
+export const dbMiddleware = createDbMiddleware(schema);

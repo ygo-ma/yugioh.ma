@@ -5,7 +5,7 @@ import type {
   R2Bucket,
 } from "@cloudflare/workers-types";
 import type { Cache } from "../cache/types";
-import type { Database } from "../db/types";
+import type { Database } from "../db";
 import type { Buckets } from "../storage/types";
 
 export interface EnvVars extends SentryBindings {

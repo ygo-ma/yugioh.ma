@@ -170,15 +170,15 @@ importers:
 
   packages/app:
     dependencies:
+      '@acme/db':
+        specifier: workspace:*
+        version: link:../db
       '@acme/sentry':
         specifier: workspace:*
         version: link:../sentry
       '@acme/ui':
         specifier: workspace:*
         version: link:../ui
-      '@libsql/client':
-        specifier: 'catalog:'
-        version: 0.17.2
       aws4fetch:
         specifier: 'catalog:'
         version: 1.0.20
@@ -255,6 +255,31 @@ importers:
       wrangler:
         specifier: 'catalog:'
         version: 4.81.1(@cloudflare/workers-types@4.20260411.1)
+
+  packages/db:
+    dependencies:
+      '@libsql/client':
+        specifier: 'catalog:'
+        version: 0.17.2
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.2(@cloudflare/workers-types@4.20260411.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1)
+    devDependencies:
+      '@acme/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 4.20260411.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.2
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.12
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
 
   packages/sentry:
     dependencies:

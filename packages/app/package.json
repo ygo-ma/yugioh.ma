@@ -18,9 +18,9 @@
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {
+    "@acme/db": "workspace:*",
     "@acme/sentry": "workspace:*",
     "@acme/ui": "workspace:*",
-    "@libsql/client": "catalog:",
     "aws4fetch": "catalog:",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
