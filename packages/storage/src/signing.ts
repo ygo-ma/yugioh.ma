@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception";
-import type { BucketMap, StorageEnvVars } from "./types";
+import type { BucketMap, S3Credentials, S3Fn, SigningKeyFn } from "./types";
 
 async function hmacSign(data: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -37,23 +37,22 @@ function timingSafeEqual(expected: string, actual: string): boolean {
 /** Generates an S3-compatible presigned GET URL using AWS SigV4. Returns null if S3 creds are missing. */
 async function s3Presign(
   s3BucketName: string,
-  env: StorageEnvVars,
+  creds: S3Credentials | undefined,
   key: string,
   ttlSeconds: number,
 ): Promise<string | null> {
-  const endpoint = env.S3_ENDPOINT;
-  const accessKeyId = env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = env.S3_SECRET_ACCESS_KEY;
-  if (!endpoint || !accessKeyId || !secretAccessKey) return null;
+  if (!creds) {
+    return null;
+  }
 
   const { AwsClient } = await import("aws4fetch");
-  const url = new URL(`/${s3BucketName}/${key}`, endpoint);
+  const url = new URL(`/${s3BucketName}/${key}`, creds.endpoint);
   url.searchParams.set("X-Amz-Expires", String(ttlSeconds));
 
   const client = new AwsClient({
-    accessKeyId,
-    secretAccessKey,
-    region: env.S3_REGION ?? "auto",
+    accessKeyId: creds.accessKeyId,
+    secretAccessKey: creds.secretAccessKey,
+    region: creds.region ?? "auto",
     service: "s3",
   });
   const signed = await client.sign(url.toString(), {
@@ -96,10 +95,12 @@ interface UrlUtils<TEnv, TBucket> {
   urlFor: (bucket: TBucket, env: TEnv, key: string) => string;
 }
 
-export function createPresignUrl<
-  TEnv extends StorageEnvVars,
-  TBucket extends string,
->(bucketConfig: BucketMap<TEnv, TBucket>, url: UrlUtils<TEnv, TBucket>) {
+export function createPresignUrl<TEnv, TBucket extends string>(
+  bucketConfig: BucketMap<TEnv, TBucket>,
+  url: UrlUtils<TEnv, TBucket>,
+  signingKey: SigningKeyFn<TEnv>,
+  s3: S3Fn<TEnv>,
+) {
   return async function presignUrl(
     bucket: TBucket,
     env: TEnv,
@@ -113,16 +114,17 @@ export function createPresignUrl<
       return `${directUrl.replace(/\/$/u, "")}/${resolved}`;
     }
 
-    const signingKey = env.STORAGE_SIGNING_KEY;
-    if (signingKey) {
+    const sigKey = signingKey(env);
+    if (sigKey) {
       const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
-      const token = await hmacSign(`${bucket}:${key}:${expires}`, signingKey);
+      const token = await hmacSign(`${bucket}:${key}:${expires}`, sigKey);
       return `/media/${bucket}/${key}?expires=${expires}&token=${token}`;
     }
 
+    const s3Creds = s3(env);
     const s3Url = await s3Presign(
       bucketConfig[bucket].s3BucketName(env),
-      env,
+      s3Creds,
       resolved,
       ttlSeconds,
     );

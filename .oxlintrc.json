@@ -22,6 +22,10 @@
     "eslint/no-console": "off",
     "eslint/no-undefined": "off",
     "eslint/no-void": "off",
+    "eslint-plugin-unicorn/no-useless-undefined": [
+      "warn",
+      { "checkArrowFunctionBody": false }
+    ],
     "eslint/no-inline-comments": "off",
     "eslint/no-warning-comments": "off",
 

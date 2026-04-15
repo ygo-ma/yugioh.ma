@@ -1,54 +1,51 @@
 import { createMiddleware } from "hono/factory";
 import { createMediaRoute as createMediaRouteImpl } from "./route";
-import { createResolvers } from "./resolve";
+import { createResolveStorage } from "./resolve";
 import { createPresignUrl, verifyHmacToken } from "./signing";
-import type { BucketMap, Storage, StorageEnvVars } from "./types";
+import type { BucketMap, StorageKitConfig } from "./types";
 import { createUrlUtils } from "./url";
 
-interface StorageKitConfig<
-  TEnv extends StorageEnvVars,
-  TBuckets extends BucketMap<TEnv>,
-> {
-  buckets: TBuckets;
-}
-
-export function createStorageKit<
-  TEnv extends StorageEnvVars,
-  const TBuckets extends BucketMap<TEnv>,
->({ buckets }: StorageKitConfig<TEnv, TBuckets>) {
-  type BucketName = keyof TBuckets & string;
-  type Buckets = Record<BucketName, Storage>;
-
-  const bucketConfig = buckets as Readonly<TBuckets>;
-
-  const url = createUrlUtils(bucketConfig);
-  const { resolveStorage } = createResolvers(bucketConfig);
-  const presignUrl = createPresignUrl(bucketConfig, url);
-
+function createStorageMiddleware<TEnv extends object, Buckets>(
+  resolve: (env: TEnv) => Promise<Buckets>,
+) {
   let cachedStorage: Promise<Buckets> | null = null;
-  const storageMiddleware = createMiddleware<{
+  return createMiddleware<{
     Bindings: TEnv;
     Variables: { storage: Buckets };
   }>(async (context, next) => {
-    cachedStorage ??= resolveStorage(context.env);
+    cachedStorage ??= resolve(context.env);
     try {
       context.set("storage", await cachedStorage);
     } catch (error) {
       cachedStorage = null;
       throw error;
     }
-
     await next();
   });
+}
 
-  function createMediaRoute() {
-    return createMediaRouteImpl(
-      bucketConfig as unknown as BucketMap,
+export function createStorageKit<
+  TEnv extends object,
+  const TBuckets extends BucketMap<TEnv>,
+>({
+  buckets,
+  signingKey = () => undefined,
+  s3 = () => undefined,
+  kvBindingName = () => undefined,
+}: StorageKitConfig<TEnv, TBuckets>) {
+  const bucketConfig = buckets as Readonly<TBuckets>;
+  const url = createUrlUtils(bucketConfig);
+  const resolveStorage = createResolveStorage(bucketConfig, s3, kvBindingName);
+  const presignUrl = createPresignUrl(bucketConfig, url, signingKey, s3);
+  const storageMiddleware = createStorageMiddleware(resolveStorage);
+  const createMediaRoute = () =>
+    createMediaRouteImpl(
+      bucketConfig,
       storageMiddleware,
-      url.isProxyDisabled as (bucket: string, env: StorageEnvVars) => boolean,
       verifyHmacToken,
+      signingKey,
+      s3,
     );
-  }
 
   return {
     bucketConfig,
@@ -57,6 +54,7 @@ export function createStorageKit<
     createMediaRoute,
     presignUrl,
     verifyHmacToken,
-    ...url,
+    storageKey: url.storageKey,
+    urlFor: url.urlFor,
   };
 }

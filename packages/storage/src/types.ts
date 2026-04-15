@@ -3,27 +3,11 @@ import type { Storage } from "unstorage";
 
 export type { Storage };
 
-export interface StorageEnvVars {
-  // ── Direct URL for the public bucket (CDN / R2 custom domain) ──
-  STORAGE_URL_PUBLIC?: string;
-
-  // ── Per-bucket key prefixes ──
-  STORAGE_PREFIX_PUBLIC?: string;
-  STORAGE_PREFIX_PRIVATE?: string;
-
-  // ── HMAC signing key for private file proxy URLs ──
-  STORAGE_SIGNING_KEY?: string;
-
-  // ── S3-compatible backend ──
-  S3_ENDPOINT?: string;
-  S3_ACCESS_KEY_ID?: string;
-  S3_SECRET_ACCESS_KEY?: string;
-  S3_REGION?: string;
-  S3_BUCKET_PUBLIC?: string;
-  S3_BUCKET_PRIVATE?: string;
-
-  // ── KV fallback binding name (Cloudflare only) ──
-  KV_STORAGE?: string;
+export interface S3Credentials {
+  endpoint: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  region?: string;
 }
 
 export interface StorageBindings {
@@ -31,7 +15,9 @@ export interface StorageBindings {
   STORAGE_PRIVATE?: R2Bucket;
 }
 
-export interface BucketConfig<TEnv = StorageEnvVars> {
+export type UserEnv = unknown;
+
+export interface BucketConfig<TEnv = UserEnv> {
   /** Whether anonymous reads are allowed (no auth, public Cache-Control). */
   public: boolean;
   /** Returns the R2 binding for this bucket, if configured. */
@@ -44,7 +30,21 @@ export interface BucketConfig<TEnv = StorageEnvVars> {
   keyPrefix: (env: TEnv) => string | null;
 }
 
-export type BucketMap<
-  TEnv = StorageEnvVars,
-  TBucket extends string = string,
-> = Record<TBucket, BucketConfig<TEnv>>;
+export type BucketMap<TEnv = UserEnv, TBucket extends string = string> = Record<
+  TBucket,
+  BucketConfig<TEnv>
+>;
+
+export type SigningKeyFn<TEnv = UserEnv> = (env: TEnv) => string | undefined;
+export type S3Fn<TEnv = UserEnv> = (env: TEnv) => S3Credentials | undefined;
+export type KvBindingNameFn<TEnv = UserEnv> = (env: TEnv) => string | undefined;
+
+export interface StorageKitConfig<TEnv, TBuckets extends BucketMap<TEnv>> {
+  buckets: TBuckets;
+  /** HMAC signing key for private file proxy URLs. */
+  signingKey?: SigningKeyFn<TEnv>;
+  /** S3-compatible credentials. Return undefined to skip S3. */
+  s3?: S3Fn<TEnv>;
+  /** KV binding name for Cloudflare Workers fallback. */
+  kvBindingName?: KvBindingNameFn<TEnv>;
+}

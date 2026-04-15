@@ -1,7 +1,13 @@
 import { Hono } from "hono";
 import type { MiddlewareHandler } from "hono/types";
 import { HTTPException } from "hono/http-exception";
-import type { BucketConfig, BucketMap, Storage, StorageEnvVars } from "./types";
+import type {
+  BucketConfig,
+  BucketMap,
+  S3Fn,
+  SigningKeyFn,
+  Storage,
+} from "./types";
 
 type VerifyFn = (
   bucket: string,
@@ -11,8 +17,29 @@ type VerifyFn = (
   signingKey: string,
 ) => Promise<void>;
 
+/** True when the proxy must refuse to serve because a better access path exists. */
+function isProxyDisabled<TEnv>(
+  config: BucketConfig<TEnv>,
+  env: TEnv,
+  signingKey: SigningKeyFn<TEnv>,
+  s3: S3Fn<TEnv>,
+): boolean {
+  if (config.baseUrl(env)) {
+    return true;
+  }
+
+  if (signingKey(env)) {
+    return false;
+  }
+
+  if (!config.public && s3(env)) {
+    return true;
+  }
+
+  return false;
+}
+
 interface MediaEnv {
-  Bindings: StorageEnvVars;
   Variables: { storage: Record<string, Storage> };
 }
 
@@ -22,15 +49,17 @@ function serveFile(
   isPublic: boolean,
 ): Response {
   const headers = new Headers({
+    "Content-Length": String(data.byteLength),
     "Content-Type":
       typeof meta.contentType === "string"
         ? meta.contentType
         : "application/octet-stream",
-    "Content-Length": String(data.byteLength),
   });
+
   if (isPublic) {
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
   }
+
   return new Response(new Uint8Array(data), {
     status: 200,
     headers,
@@ -50,11 +79,12 @@ async function authorizePrivate(
       message: "private storage access is not configured",
     });
   }
+
   await verify(bucket, key, expires, token, signingKey);
 }
 
 interface MediaContext {
-  env: StorageEnvVars;
+  env: unknown;
   req: {
     param(name: string): string;
     query(name: string): string | undefined;
@@ -62,17 +92,19 @@ interface MediaContext {
   var: { storage: Record<string, Storage> };
 }
 
-function buildGetHandler(
+function buildGetHandler<TEnv>(
   bucket: string,
-  config: BucketConfig,
-  isProxyDisabled: (bucket: string, env: StorageEnvVars) => boolean,
+  config: BucketConfig<TEnv>,
   verify: VerifyFn,
+  signingKey: SigningKeyFn<TEnv>,
+  s3: S3Fn<TEnv>,
 ) {
   return async (context: MediaContext) => {
-    if (isProxyDisabled(bucket, context.env)) {
-      throw new HTTPException(404, {
-        message: "use direct or presigned URLs for this bucket",
-      });
+    const env = context.env as TEnv;
+
+    if (isProxyDisabled(config, env, signingKey, s3)) {
+      const message = "use direct or presigned URLs for this bucket";
+      throw new HTTPException(404, { message });
     }
 
     const key = context.req.param("key");
@@ -80,16 +112,14 @@ function buildGetHandler(
       throw new HTTPException(400, { message: "missing key" });
     }
     if (key.endsWith("$")) {
-      throw new HTTPException(404, {
-        message: "file not found",
-      });
+      throw new HTTPException(404, { message: "file not found" });
     }
 
     if (!config.public) {
       await authorizePrivate(
         bucket,
         key,
-        context.env.STORAGE_SIGNING_KEY,
+        signingKey(env),
         context.req.query("expires"),
         context.req.query("token"),
         verify,
@@ -110,16 +140,17 @@ function buildGetHandler(
   };
 }
 
-export function createMediaRoute(
-  bucketConfig: BucketMap,
+export function createMediaRoute<TEnv>(
+  bucketConfig: BucketMap<TEnv>,
   middleware: MiddlewareHandler,
-  isProxyDisabled: (bucket: string, env: StorageEnvVars) => boolean,
   verify: VerifyFn,
+  signingKey: SigningKeyFn<TEnv>,
+  s3: S3Fn<TEnv>,
 ) {
   const route = new Hono<MediaEnv>().use(middleware);
 
   for (const [bucket, config] of Object.entries(bucketConfig)) {
-    const handler = buildGetHandler(bucket, config, isProxyDisabled, verify);
+    const handler = buildGetHandler(bucket, config, verify, signingKey, s3);
     route.get(`/${bucket}/:key{.+}`, handler);
   }
 
