@@ -108,7 +108,7 @@ async function resolveBucket<TEnv>(
 
   if (!storage) {
     throw new Error(
-      "No storage backend: add R2 bindings, set S3_ENDPOINT, or set KV_STORAGE=<binding-name>",
+      "No storage backend: configure an R2 binding, provide S3 credentials via s3(), or a KV binding name via kvBindingName()",
     );
   }
 
