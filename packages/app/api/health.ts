@@ -5,7 +5,6 @@ import { resolveCache } from "@acme/cache";
 import { resolveDatabase } from "../db";
 import type { AppEnv } from "../server/types";
 import { resolveStorage } from "../storage";
-import { BUCKET_NAMES } from "../storage/buckets";
 
 async function checkDatabase(env: AppEnv["Bindings"]) {
   try {
@@ -31,7 +30,7 @@ async function checkStorage(env: AppEnv["Bindings"]) {
     const buckets = await resolveStorage(env);
     await Promise.all(
       // hasItem maps to HeadObject (Class B on R2)
-      BUCKET_NAMES.map((name) => buckets[name].hasItem("_health")),
+      Object.values(buckets).map((bucket) => bucket.hasItem("_health")),
     );
   } catch {
     throw new HTTPException(503, { message: "storage unreachable" });

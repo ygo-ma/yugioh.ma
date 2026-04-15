@@ -1,0 +1,29 @@
+{
+  "name": "@acme/storage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./helpers": "./src/helpers.ts"
+  },
+  "scripts": {
+    "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
+  },
+  "dependencies": {
+    "aws4fetch": "catalog:",
+    "unstorage": "catalog:",
+    "uuid": "catalog:"
+  },
+  "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "catalog:",
+    "hono": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "hono": "catalog:"
+  }
+}

@@ -21,13 +21,11 @@
     "@acme/cache": "workspace:*",
     "@acme/db": "workspace:*",
     "@acme/sentry": "workspace:*",
+    "@acme/storage": "workspace:*",
     "@acme/ui": "workspace:*",
-    "aws4fetch": "catalog:",
     "drizzle-orm": "catalog:",
     "drizzle-zod": "catalog:",
     "hono": "catalog:",
-    "unstorage": "catalog:",
-    "uuid": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
