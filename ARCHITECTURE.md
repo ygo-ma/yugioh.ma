@@ -402,14 +402,25 @@ need explicit storage configuration (R2 bindings, S3, or manual
   catalog, workspaces reference via `catalog:`.
 - **No JS/JSX files**: TypeScript and CSS only.
 
+<!-- init-strip:start -->
+
 ## Customizing
 
-All instances of `@acme` and `acme` are placeholders. Run the init
-script to replace them:
+All instances of `acme`, `Acme`, and `ACME` are placeholders. Run the
+init script to replace them:
 
 ```
 ./init.sh <project-slug>
 ```
 
-The script scans all text files, replaces both forms, regenerates
-`pnpm-lock.yaml`, then deletes itself.
+Given a slug like `my-project`, the script rewrites:
+
+- `acme` → `my-project` (kebab-case, including `@acme/*` package
+  scopes as substrings)
+- `Acme` → `MyProject` (PascalCase — type names, JSX, titles)
+- `ACME` → `MY_PROJECT` (CONSTANT_CASE — env vars, constants)
+
+It scans all text files, regenerates `pnpm-lock.yaml`, then deletes
+itself.
+
+<!-- init-strip:end -->

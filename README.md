@@ -10,7 +10,7 @@ git clone <repo-url> my-project && cd my-project
 
 # ...you probably want to open the project in a dev container at this point...
 
-./init.sh my-project   # replaces @acme/acme placeholders
+./init.sh my-project   # replaces acme/Acme/ACME placeholders
 
 pnpm install
 pnpm dev

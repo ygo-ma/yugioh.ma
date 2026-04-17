@@ -49,6 +49,23 @@ done
 
 echo "Replaced Acme → $pascal, ACME → $constant, acme → $slug"
 
+# Strip the README's `./init.sh <slug>` instruction line + trailing blank.
+if [ -f "$root/README.md" ]; then
+  perl -i -0777 -pe 's/^\.\/init\.sh .*\n\n//m' "$root/README.md"
+fi
+
+# Strip `<!-- init-strip:start -->...<!-- init-strip:end -->` blocks
+# from any markdown file.
+find "$root" -type f -name '*.md' \
+  -not -path '*/.git/*' \
+  -not -path '*/node_modules/*' \
+  -print0 |
+while IFS= read -r -d '' file; do
+  perl -i -0777 -pe \
+    's/<!-- init-strip:start -->\n?.*?<!-- init-strip:end -->\n?//gs' \
+    "$file"
+done
+
 if command -v pnpm &>/dev/null; then
   echo "Regenerating pnpm-lock.yaml..."
   (cd "$root" && pnpm install)
