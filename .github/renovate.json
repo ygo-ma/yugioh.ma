@@ -6,10 +6,17 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
-      "description": "Only widen peerDependencies and engines",
+      "description": "Widen peerDependencies",
       "matchDepTypes": ["peerDependencies"],
       "rangeStrategy": "widen",
       "automerge": true
+    },
+    {
+      "description": "Node engine: major updates only",
+      "matchDepTypes": ["engines"],
+      "matchPackageNames": ["node"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "enabled": false
     },
     {
       "description": "Allow automerge for minor and patch updates",
