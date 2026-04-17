@@ -79,8 +79,8 @@ catalogs:
       specifier: 0.8.3
       version: 0.8.3
     hono:
-      specifier: 4.12.12
-      version: 4.12.12
+      specifier: 4.12.14
+      version: 4.12.14
     husky:
       specifier: 9.1.7
       version: 9.1.7
@@ -193,7 +193,7 @@ importers:
         version: 0.8.3(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260414.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(zod@4.3.6)
       hono:
         specifier: 'catalog:'
-        version: 4.12.12
+        version: 4.12.14
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -267,7 +267,7 @@ importers:
         version: 24.12.2
       hono:
         specifier: 'catalog:'
-        version: 4.12.12
+        version: 4.12.14
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -292,7 +292,7 @@ importers:
         version: 24.12.2
       hono:
         specifier: 'catalog:'
-        version: 4.12.12
+        version: 4.12.14
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -338,7 +338,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       hono:
         specifier: 'catalog:'
-        version: 4.12.12
+        version: 4.12.14
       nitro:
         specifier: 'catalog:'
         version: 3.0.260311-beta(@libsql/client@0.17.2)(aws4fetch@1.0.20)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260414.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(miniflare@4.20260409.0)(rollup@4.60.1)(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0))
@@ -378,7 +378,7 @@ importers:
         version: 24.12.2
       hono:
         specifier: 'catalog:'
-        version: 4.12.12
+        version: 4.12.14
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -3086,8 +3086,8 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.12.12:
-    resolution: {integrity: sha512-p1JfQMKaceuCbpJKAPKVqyqviZdS0eUxH9v82oWo1kb9xjQ5wA6iP3FNVAPDFlz5/p7d45lO+BpSk1tuSZMF4Q==}
+  hono@4.12.14:
+    resolution: {integrity: sha512-am5zfg3yu6sqn5yjKBNqhnTX7Cv+m00ox+7jbaKkrLMRJ4rAdldd1xPd/JzbBWspqaQv6RSTrgFN95EsfhC+7w==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.0:
@@ -6180,7 +6180,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.12.12: {}
+  hono@4.12.14: {}
 
   hookable@6.1.0: {}
 
