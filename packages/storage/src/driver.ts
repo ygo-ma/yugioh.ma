@@ -8,7 +8,8 @@ export interface StorageObject {
   contentType: string;
   /** Stored HTTP cache-control. Absent when the put did not set it. */
   cacheControl: string | undefined;
-  size: number;
+  /** Byte length of `body`. Null when the backend doesn't expose it. */
+  size: number | null;
   metadata: Record<string, string>;
 }
 

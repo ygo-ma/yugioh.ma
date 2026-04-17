@@ -45,8 +45,9 @@ export class S3Driver implements StorageDriver {
       throw new Error(`S3 GET failed: ${response.status}`);
     }
 
+    const headers = response.headers;
     const metadata: Record<string, string> = {};
-    for (const [name, value] of response.headers) {
+    for (const [name, value] of headers) {
       if (name.startsWith(META_PREFIX)) {
         metadata[name.slice(META_PREFIX.length)] = value;
       }
@@ -54,10 +55,14 @@ export class S3Driver implements StorageDriver {
 
     return {
       body: response.body,
-      contentType:
-        response.headers.get("content-type") ?? "application/octet-stream",
-      cacheControl: response.headers.get("cache-control") ?? undefined,
-      size: Number(response.headers.get("content-length") ?? "0"),
+      contentType: headers.get("content-type") ?? "application/octet-stream",
+      cacheControl: headers.get("cache-control") ?? undefined,
+      // Spec-compliant providers always set content-length on whole-object
+      // GETs; null surfaces non-conforming responses so the proxy omits
+      // Content-Length instead of shipping a wrong value.
+      size: headers.has("content-length")
+        ? Number(headers.get("content-length"))
+        : null,
       metadata,
     };
   }
