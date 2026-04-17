@@ -1,10 +1,11 @@
+import { sentryHonoErrorHandler } from "@acme/sentry/api";
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { resolveCache } from "../cache";
 import { resolveDatabase } from "../db";
-import type { AppEnv } from "../types";
 import { resolveStorage } from "../storage";
+import type { AppEnv } from "../types";
 
 async function checkDatabase(env: AppEnv["Bindings"]) {
   try {
@@ -37,13 +38,16 @@ async function checkStorage(env: AppEnv["Bindings"]) {
   }
 }
 
-const health = new Hono<AppEnv>();
+const health = new Hono<AppEnv>()
+  .onError(sentryHonoErrorHandler)
+  .basePath("/health")
+  .get("/", async (context) => {
+    await Promise.all([
+      checkDatabase(context.env),
+      checkCache(context.env),
+      checkStorage(context.env),
+    ]);
+    return context.json({ status: "ok" });
+  });
 
-export default health.get("/", async (context) => {
-  await Promise.all([
-    checkDatabase(context.env),
-    checkCache(context.env),
-    checkStorage(context.env),
-  ]);
-  return context.json({ status: "ok" });
-});
+export default health;

@@ -1,7 +1,7 @@
 import { defineEventHandler } from "nitro/h3";
 
 export default defineEventHandler((event) => {
-  if (event.url.pathname === "/api/health") {
+  if (event.url.pathname === "/health") {
     return;
   }
 
