@@ -1,4 +1,4 @@
-import { sentryHonoErrorHandler } from "@acme/sentry/api";
+import { sentryHonoErrorHandler } from "@acme/sentry/hono";
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";

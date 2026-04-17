@@ -19,7 +19,7 @@ const stackParser = createStackParser(nodeStackLineParser());
  *
  * Manual `CloudflareClient` construction is required because
  * `@sentry/cloudflare` doesn't expose an `init()` helper. The companion
- * `withSentry` wrapper (from `@acme/sentry/api`) only covers `/api/*`,
+ * `withSentry` wrapper (from `@acme/sentry/hono`) only covers `/api/*`,
  * so this middleware exists to cover SSR + TanStack Start server functions.
  *
  * Re-exported as the default export of `@acme/sentry/server` so the host app

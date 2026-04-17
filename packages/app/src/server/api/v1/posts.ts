@@ -1,4 +1,4 @@
-import { captureHandledError } from "@acme/sentry/api";
+import { captureHandledError } from "@acme/sentry/hono";
 import { createSelectSchema } from "drizzle-zod";
 import { Hono } from "hono";
 import { z } from "zod";

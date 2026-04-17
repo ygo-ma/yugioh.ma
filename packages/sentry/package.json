@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./api": "./src/api/index.ts",
+    "./hono": "./src/hono/index.ts",
     "./client": "./src/client/index.ts",
     "./middleware": "./src/middleware/index.ts",
     "./server": "./src/server/index.ts",

@@ -1,4 +1,4 @@
-import { withSentry } from "@acme/sentry/api";
+import { withSentry } from "@acme/sentry/hono";
 import type { Env, Hono } from "hono";
 import { defineEventHandler } from "nitro/h3";
 import { createEnvProxy } from "./env";

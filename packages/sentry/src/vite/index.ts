@@ -43,7 +43,7 @@ export function sentryPlugin(): PluginOption {
   const env = process.env;
 
   // Tell the client SDK that Sentry is configured, but DON'T copy the DSN
-  // itself — the /api/sentry tunnel keeps the real DSN out of the bundle.
+  // itself — the /sentry tunnel keeps the real DSN out of the bundle.
   mirror("VITE_SENTRY_ENABLED", env.SENTRY_DSN && "true");
   mirror("VITE_SENTRY_ENVIRONMENT", env.SENTRY_ENVIRONMENT);
   mirror("VITE_SENTRY_RELEASE", env.SENTRY_RELEASE);

@@ -13,7 +13,7 @@ export default defineConfig({
     viteReact(),
     acmeServer({
       baseDir: "./src/server",
-      apps: ["api", "media", "health"],
+      apps: ["api", "media", "health", "sentry"],
       middlewareDir: "middleware",
     }),
     sentryPlugin(),

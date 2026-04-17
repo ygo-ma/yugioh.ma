@@ -16,7 +16,7 @@ import { HTTPException } from "hono/http-exception";
  * Wire it into your root Hono app:
  *
  * ```ts
- * import { sentryHonoErrorHandler } from "@acme/sentry/api";
+ * import { sentryHonoErrorHandler } from "@acme/sentry/hono";
  *
  * new Hono().onError(sentryHonoErrorHandler).route(...)
  * ```

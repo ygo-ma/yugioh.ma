@@ -1,4 +1,4 @@
-import { sentryHonoErrorHandler } from "@acme/sentry/api";
+import { sentryHonoErrorHandler } from "@acme/sentry/hono";
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { createMediaRoute } from "../storage";

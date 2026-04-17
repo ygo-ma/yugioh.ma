@@ -1,6 +1,6 @@
 // Sentry tunnel endpoint — proxies client-side Sentry events through our
 // server so ad-blockers that block requests to *.sentry.io don't silently
-// drop error reports. The client SDK is configured with `tunnel: "/api/sentry"`
+// drop error reports. The client SDK is configured with `tunnel: "/sentry"`
 // which sends envelopes here instead of directly to Sentry's ingest.
 //
 // The client uses a dummy DSN (never the real one). This tunnel rewrites the
