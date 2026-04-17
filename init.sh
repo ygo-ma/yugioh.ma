@@ -12,9 +12,9 @@ fi
 
 slug="$1"
 
-if ! [[ "$slug" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
+if ! [[ "$slug" =~ ^[a-z]([a-z0-9-]*[a-z0-9])?$ ]]; then
   echo "Error: '$slug' is not a valid slug."
-  echo "Use lowercase letters, numbers, and dashes (e.g. my-project)."
+  echo "Must start with a lowercase letter; may contain lowercase letters, numbers, and dashes (e.g. my-project)."
   exit 1
 fi
 
