@@ -33,6 +33,7 @@ root="$(cd "$(dirname "$0")" && pwd)"
 
 find "$root" -type f \
   -not -path '*/.git/*' \
+  -not -name '.git' \
   -not -path '*/node_modules/*' \
   -not -name 'pnpm-lock.yaml' \
   -not -name 'init.sh' \
