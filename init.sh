@@ -19,7 +19,7 @@ if ! [[ "$slug" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
 fi
 
 # my-project -> MyProject  (avoid bash 4+ ${var^} so macOS bash 3.2 works)
-pascal=$(perl -e 'print join "", map ucfirst, split /-/, $ARGV[0]' "$slug")
+pascal=$(perl -e 'print join("", map { ucfirst } split(/-/, $ARGV[0]))' "$slug")
 
 # my-project -> MY_PROJECT
 constant=$(printf '%s' "$slug" | tr 'a-z-' 'A-Z_')
