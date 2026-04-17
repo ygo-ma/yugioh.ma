@@ -12,10 +12,9 @@ export default defineConfig({
     tanstackStart({ srcDirectory: "src" }),
     viteReact(),
     acmeServer({
-      apps: {
-        "/api": "./src/server/api/app",
-        "/media": "./src/server/media/app",
-      },
+      baseDir: "./src/server",
+      apps: ["api", "media"],
+      middlewareDir: "middleware",
     }),
     sentryPlugin(),
   ],

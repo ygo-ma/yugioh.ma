@@ -1,11 +1,15 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { NitroEventHandler } from "nitro/types";
 import { nitro, type NitroPluginConfig } from "nitro/vite";
 import { normalizePath, type PluginOption } from "vite";
 
+type AcmeApp = string | { route: string; src: string };
+
 interface AcmeServerOptions {
-  apps?: Record<string, string>;
+  baseDir?: string;
+  apps?: AcmeApp[];
+  middlewareDir?: string;
   nitro?: NitroPluginConfig;
 }
 
@@ -44,7 +48,39 @@ function collectExternals(root: string): string[] {
 }
 
 function middleware(handler: string): NitroEventHandler {
-  return { route: "", handler, middleware: true };
+  return { route: "", handler: normalizePath(handler), middleware: true };
+}
+
+function normalizeApp(entry: AcmeApp) {
+  if (typeof entry === "string") {
+    return { route: `/${entry}`, src: `${entry}/app` };
+  }
+  return entry;
+}
+
+function scanMiddlewareDir(dir: string): NitroEventHandler[] {
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .toSorted()
+    .map((file) => middleware(resolve(dir, file)));
+}
+
+function buildAppVirtual(baseDir: string, entry: AcmeApp) {
+  const { route, src } = normalizeApp(entry);
+  const id = `#acme${route.replaceAll("/", "-")}`;
+  const appImportPath = normalizePath(resolve(baseDir, src));
+  const source = [
+    `import { createApiEventHandler } from "@acme/server";`,
+    `import app from "${appImportPath}";`,
+    `export default createApiEventHandler(app);`,
+  ].join("\n");
+  const handler: NitroEventHandler = {
+    route: `${route}/**`,
+    handler: id,
+    lazy: true,
+  };
+  return { id, source, handler };
 }
 
 type ExternalOption = NonNullable<
@@ -76,15 +112,18 @@ export function acmeServer(options: AcmeServerOptions = {}): PluginOption {
     middleware(resolve(pkg, "nitro/middleware/sentry")),
   ];
 
-  for (const [route, appPath] of Object.entries(options.apps ?? {})) {
-    const id = `#acme${route.replaceAll("/", "-")}`;
-    const appImportPath = normalizePath(resolve(root, appPath));
-    virtual[id] = [
-      `import { createApiEventHandler } from "@acme/server";`,
-      `import app from "${appImportPath}";`,
-      `export default createApiEventHandler(app);`,
-    ].join("\n");
-    handlers.push({ route: `${route}/**`, handler: id, lazy: true });
+  const baseDir = resolve(root, options.baseDir ?? "./");
+
+  if (options.middlewareDir) {
+    handlers.push(
+      ...scanMiddlewareDir(resolve(baseDir, options.middlewareDir)),
+    );
+  }
+
+  for (const entry of options.apps ?? []) {
+    const { id, source, handler } = buildAppVirtual(baseDir, entry);
+    virtual[id] = source;
+    handlers.push(handler);
   }
 
   const {
