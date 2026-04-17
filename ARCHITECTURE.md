@@ -55,8 +55,8 @@ from `@acme/server/vite`:
 acmeServer({
   baseDir: "./src/server",
   apps: ["api", "media", "health", "sentry"],
-  middlewareDir: "middleware",
-})
+  middlewareDir: "middleware"
+});
 ```
 
 Each entry in `apps` resolves to `<name>/app.ts` under `baseDir` and
@@ -89,8 +89,8 @@ inside each package's resolver.
 ```ts
 createDbKit({
   schema,
-  databaseUrl: (env) => resolveDbUrl(env.DATABASE_URL),
-})
+  databaseUrl: (env) => resolveDbUrl(env.DATABASE_URL)
+});
 // → { resolveDatabase, dbMiddleware, seed }
 ```
 
@@ -112,7 +112,7 @@ is CLI-only: caller provides the url string directly.
 ## Cache Abstraction
 
 ```ts
-createCacheKit({ cacheUrl: (env) => env.CACHE_URL })
+createCacheKit({ cacheUrl: (env) => env.CACHE_URL });
 // → { resolveCache, cacheMiddleware }
 ```
 
