@@ -25,7 +25,7 @@ interface CaptureHandledErrorOptions {
  * Capture an error from inside a Hono route handler that the handler is
  * choosing to swallow (e.g. a cache parse/validation failure that falls
  * through to a database refresh). Enriches the Sentry scope with the same
- * request context as the global `sentryHonoErrorHandler`.
+ * request context as the handler produced by `createSentryHonoErrorHandler`.
  *
  * Use this when you want a problem reported to Sentry but don't want it to
  * surface as a 5xx to the client.

@@ -21,7 +21,7 @@ jobs:
         run: docker run -d --name acme -p 3000:3000 acme
 
       - name: Health check
-        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors http://localhost:3000/health
+        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors -A "acme-ci-health-probe" http://localhost:3000/health
 
       - name: Stop container
         if: always()
@@ -40,7 +40,7 @@ jobs:
         run: docker compose up -d --build
 
       - name: Health check
-        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors http://localhost:3000/health
+        run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors -A "acme-ci-health-probe" http://localhost:3000/health
 
       - name: Stop
         if: always()

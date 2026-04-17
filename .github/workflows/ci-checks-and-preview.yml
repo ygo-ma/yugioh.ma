@@ -281,4 +281,5 @@ jobs:
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || env.STAGING_URL || steps.deploy.outputs.pages-deployment-url }}
         run: |
-          curl -fsSL --retry 10 --retry-max-time 300 --retry-all-errors "$DEPLOY_URL/health"
+          curl -fsSL --retry 10 --retry-max-time 300 --retry-all-errors \
+            -A "acme-ci-health-probe" "$DEPLOY_URL/health"

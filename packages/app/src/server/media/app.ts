@@ -1,10 +1,10 @@
-import { sentryHonoErrorHandler } from "@acme/sentry/hono";
+import { createSentryHonoErrorHandler } from "@acme/sentry/hono";
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { createMediaRoute } from "../storage";
 
 const media = new Hono<AppEnv>()
-  .onError(sentryHonoErrorHandler)
+  .onError(createSentryHonoErrorHandler())
   .route("/media", createMediaRoute());
 
 export default media;

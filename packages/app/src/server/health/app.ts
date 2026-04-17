@@ -1,4 +1,4 @@
-import { sentryHonoErrorHandler } from "@acme/sentry/hono";
+import { createSentryHonoErrorHandler } from "@acme/sentry/hono";
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -39,7 +39,13 @@ async function checkStorage(env: AppEnv["Bindings"]) {
 }
 
 const health = new Hono<AppEnv>()
-  .onError(sentryHonoErrorHandler)
+  // CI's post-deploy probe races bindings initialization; silence its
+  // warmup 5xx so Sentry only sees real outages (non-CI callers).
+  .onError(
+    createSentryHonoErrorHandler({
+      ignoreUserAgent: "acme-ci-health-probe",
+    }),
+  )
   .basePath("/health")
   .get("/", async (context) => {
     await Promise.all([
