@@ -30,7 +30,6 @@ const uploadTestImage = createServerFn({ method: "POST" }).handler(
     if (!response.ok) {
       // TODO: replace with flash messages once form error handling is implemented
       const message = await response.text();
-      // oxlint-disable-next-line typescript-eslint/only-throw-error -- TanStack Start redirect pattern
       throw redirect({
         to: "/test-upload",
         search: {
@@ -40,7 +39,6 @@ const uploadTestImage = createServerFn({ method: "POST" }).handler(
       });
     }
 
-    // oxlint-disable-next-line typescript-eslint/only-throw-error -- TanStack Start redirect pattern
     throw redirect({
       to: "/test-upload",
       search: { bucket: bucket === "private" ? "private" : "public" },

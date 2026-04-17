@@ -62,6 +62,18 @@
     "@typescript-eslint/promise-function-async": [
       "error",
       { "checkArrowFunctions": false }
+    ],
+    "typescript/only-throw-error": [
+      "error",
+      {
+        "allow": [
+          {
+            "from": "package",
+            "name": "Redirect",
+            "package": "@tanstack/router-core"
+          }
+        ]
+      }
     ]
   },
   "options": {
