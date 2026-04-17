@@ -1,3 +1,4 @@
+import { isRedirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { CAPTURED } from "../shared/captured";
 
@@ -14,6 +15,9 @@ import { CAPTURED } from "../shared/captured";
  * `.server()` — runs on the backend when a server function throws.
  *   Calls `Sentry.captureException` so the error is reported server-side.
  *   `@sentry/cloudflare` is lazy-imported so the client bundle stays slim.
+ *   TanStack Start's control-flow throws (`redirect()` Responses, bare
+ *   `Response` instances) are re-thrown without capture — they are the
+ *   framework's normal way to return HTTP responses, not errors.
  *
  * Register it in your TanStack Start config:
  *
@@ -42,6 +46,10 @@ export const sentryFunctionMiddleware = createMiddleware({ type: "function" })
     try {
       return await next();
     } catch (error) {
+      if (isRedirect(error) || error instanceof Response) {
+        throw error;
+      }
+
       try {
         const Sentry = await import("@sentry/cloudflare");
         Sentry.captureException(error);
