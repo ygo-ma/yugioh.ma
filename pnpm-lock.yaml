@@ -375,7 +375,7 @@ importers:
         version: 4.12.12
       nitro:
         specifier: 'catalog:'
-        version: 3.0.260311-beta(@libsql/client@0.17.2)(aws4fetch@1.0.20)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260413.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(miniflare@4.20260409.0)(rollup@4.60.1)(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0))
+        version: 3.0.260311-beta(@libsql/client@0.17.2)(aws4fetch@1.0.20)(dotenv@16.6.1)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260414.1)(@libsql/client@0.17.2)(@opentelemetry/api@1.9.1))(lru-cache@11.2.7)(miniflare@4.20260409.0)(rollup@4.60.1)(vite@8.0.8(@types/node@24.12.2)(esbuild@0.27.5)(tsx@4.21.0))
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
