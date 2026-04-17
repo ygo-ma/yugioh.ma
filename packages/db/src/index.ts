@@ -6,7 +6,7 @@ export type { Database, DbBindings } from "./types";
 
 interface DbKitConfig<TEnv, TSchema extends Schema> {
   schema: TSchema;
-  databaseUrl: (env: TEnv) => string | undefined;
+  databaseUrl: (env: TEnv) => string;
 }
 
 export function createDbKit<TEnv, TSchema extends Schema>({
@@ -20,8 +20,11 @@ export function createDbKit<TEnv, TSchema extends Schema>({
     }
 
     try {
-      const url = databaseUrl(env);
-      dbPromise = resolveDatabase({ d1: env.DB, url, schema });
+      dbPromise = resolveDatabase({
+        d1: env.DB,
+        url: () => databaseUrl(env),
+        schema,
+      });
       return await dbPromise;
     } catch (error) {
       dbPromise = null;
@@ -37,8 +40,7 @@ export function createDbKit<TEnv, TSchema extends Schema>({
     await next();
   });
 
-  const seed = async (path: string) => {
-    const url = databaseUrl(process.env as unknown as TEnv);
+  const seed = async (url: string, path: string) => {
     const db = await resolveDatabase({ url, schema });
     // Dynamic: keeps node:fs out of the CF worker bundle.
     const { runSeed } = await import("./seed");

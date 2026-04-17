@@ -1,4 +1,7 @@
 import { resolve } from "node:path";
-import { seed } from ".";
+import { resolveDbUrl, seed } from ".";
 
-await seed(resolve(import.meta.dirname, "seed.sql"));
+const url = resolveDbUrl(process.env.DATABASE_URL);
+const path = resolve(import.meta.dirname, "seed.sql");
+
+await seed(url, path);
