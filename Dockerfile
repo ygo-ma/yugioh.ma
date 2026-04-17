@@ -38,7 +38,7 @@ COPY --from=build /app/packages/app/.output /app
 WORKDIR /app/server
 
 # Migrations + drizzle config, alongside the server bundle
-COPY packages/app/db/migrations db/migrations
+COPY packages/app/src/server/db/migrations src/server/db/migrations
 COPY packages/app/drizzle.config.ts drizzle.config.ts
 
 # Resolve all server deps in one shot, including libsql's correct

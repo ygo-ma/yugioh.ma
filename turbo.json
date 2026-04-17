@@ -15,8 +15,8 @@
       "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
-        "db/migrations/**/*.{json,sql}",
+        "src/**/*.{ts,tsx,css}",
+        "src/**/migrations/**/*.{json,sql}",
         ".storybook/**",
         "*.json",
         ".gitignore",
@@ -31,7 +31,7 @@
       "outputLogs": "new-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
+        "src/**/*.{ts,tsx,css}",
         ".storybook/**",
         "vite.config.ts",
         "tsconfig.json",
@@ -46,7 +46,7 @@
       "outputLogs": "new-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
+        "src/**/*.{ts,tsx,css}",
         ".storybook/**",
         "vite.config.ts",
         "tsconfig.json",
@@ -62,8 +62,8 @@
       "outputLogs": "errors-only",
       "inputs": [
         "$TURBO_DEFAULT$",
-        "{src,web,api,server,db}/**/*.{ts,tsx,css}",
-        "!{src,web,api,server,db}/**/*.{test,stories}.{ts,tsx}",
+        "src/**/*.{ts,tsx,css}",
+        "!src/**/*.{test,stories}.{ts,tsx}",
         "vite.config.ts",
         "tsconfig.json",
         "tsconfig.*.json",

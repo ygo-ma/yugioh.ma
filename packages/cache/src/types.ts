@@ -8,5 +8,4 @@ export interface Cache {
 
 export interface CacheBindings {
   CACHE?: KVNamespace;
-  CACHE_URL?: string;
 }

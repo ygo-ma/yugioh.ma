@@ -1,22 +1,28 @@
+import type { KVNamespace } from "@cloudflare/workers-types";
 import { getRuntimeKey } from "hono/adapter";
-import type { Cache, CacheBindings } from "./types";
+import type { Cache } from "./types";
 
-export async function resolveCache(env: CacheBindings): Promise<Cache> {
-  // On Cloudflare Workers/Pages, use the KV namespace binding.
+interface ResolveCacheOptions {
+  kv?: KVNamespace;
+  url?: string;
+}
+
+export async function resolveCache({
+  kv,
+  url,
+}: ResolveCacheOptions): Promise<Cache> {
   if (getRuntimeKey() === "workerd") {
-    if (!env.CACHE) {
+    if (!kv) {
       throw new Error("Please add a KV binding named 'CACHE'");
     }
 
     const { createCloudflareCache } = await import("./cloudflare");
-    return createCloudflareCache(env.CACHE);
+    return createCloudflareCache(kv);
   }
 
-  // On Node.js: use Valkey if CACHE_URL is set (docker compose), otherwise
-  // fall back to an in-memory store (dev or single-container Docker).
-  if (env.CACHE_URL) {
+  if (url) {
     const { createValkeyCache } = await import("./valkey");
-    return createValkeyCache(env.CACHE_URL);
+    return createValkeyCache(url);
   }
 
   const { createMemoryCache } = await import("./memory");

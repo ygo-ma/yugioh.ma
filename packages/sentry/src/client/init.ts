@@ -12,8 +12,8 @@ import { envToBool } from "../shared/env";
  *   - `VITE_SENTRY_RELEASE`
  *   - `VITE_SENTRY_DIST`
  *
- * Errors are tunneled through `/api/sentry` (the route exposed by
- * `sentryTunnelRoute` in `@acme/sentry/api`) so they bypass ad-blockers.
+ * Errors are tunneled through `/sentry` (the route exposed by
+ * `sentryTunnelRoute` in `@acme/sentry/hono`) so they bypass ad-blockers.
  *
  * Errors that were already captured server-side by `sentryFunctionMiddleware`
  * (from `@acme/sentry/middleware`) are dropped here via the `beforeSend`
@@ -32,7 +32,7 @@ export function initSentryClient(router: AnyRouter): void {
 
   Sentry.init({
     dsn: "https://reporter@errors.internal/0",
-    tunnel: "/api/sentry",
+    tunnel: "/sentry",
     environment: VITE_SENTRY_ENVIRONMENT ?? "development",
     release: VITE_SENTRY_RELEASE,
     dist: VITE_SENTRY_DIST,

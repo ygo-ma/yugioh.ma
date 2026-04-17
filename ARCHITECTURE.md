@@ -11,118 +11,152 @@ under `packages/`.
 
 ```
 packages/
-  app/               # The full-stack application
-    api/             # Hono API routes
-      app.ts         # Root Hono app — mounts health, sentry tunnel, v1
-      health.ts      # GET /api/health (DB + cache + storage check)
-      v1/            # Versioned API sub-app
-        index.ts     # Middleware chain + route mounts
-        posts.ts     # GET/POST /api/v1/posts
-        sentry-test.ts  # GET /api/v1/sentry-test
-        test-upload.ts  # GET/POST /api/v1/test-upload
-    db/              # Database layer
-      index.ts       # resolveDatabase() + dbMiddleware
-      schema.ts      # Drizzle table definitions
-      sqlite.ts      # libsql driver for Node.js/Docker
-      types.ts       # Database type export
-      migrations/    # Drizzle-generated SQL migrations
-    cache/           # Cache layer
-      index.ts       # resolveCache() + cacheMiddleware
-      types.ts       # Cache interface
-    storage/         # File storage layer
-      index.ts       # Barrel re-exports
-      buckets.ts     # Bucket registry (single source of truth)
-      types.ts       # Storage + Buckets type exports
-      resolve.ts     # Driver resolution + storageMiddleware
-      url.ts         # urlFor(), storageKey(), isProxyDisabled()
-      signing.ts     # HMAC signing, S3 presigning, presignUrl()
-      helpers.ts     # generateKey(), storeFile(), FileMeta, MAX_UPLOAD_BYTES
-    media/           # Read-only file-serving Hono app
-      app.ts         # GET /media/<bucket>/:key
-    server/          # Nitro glue (SSR + middleware)
-      env.ts         # createEnvProxy() for CF/Node env unification
-      handler.ts     # createApiEventHandler() shared by API + media
-      types.ts       # EnvVars, CfBindings, AppEnv
-      error.ts       # Nitro error handler
-      middleware/     # Numbered for execution order
-        00-env.ts    # Creates env proxy on every request
-        20-sentry.ts # Sentry SSR init
-        25-auth.ts   # Basic auth (skips /api/health)
-      routes/
-        api/[...].ts    # Forwards /api/* to Hono API app
-        media/[...].ts  # Forwards /media/* to Hono media app
-    web/             # TanStack Start frontend
-      api-client.ts  # apiFetch() — isomorphic fetch with header forwarding
-      routes/        # File-based routing
-      router.tsx     # Router init + client Sentry setup
-  sentry/            # @acme/sentry — extracted Sentry package
-  tsconfig/          # Shared TypeScript configs
-  ui/                # @acme/ui — design tokens, CSS reset, components
+  app/                        # Full-stack application
+    src/
+      server/                 # Server-side glue
+        api/app.ts            # Hono app at /api (mounts v1)
+        api/v1/               # Versioned API (posts, sentry-test, test-upload)
+        media/app.ts          # Hono app at /media (file serving)
+        health/app.ts         # Hono app at /health (db+cache+storage check)
+        sentry/app.ts         # Hono app at /sentry (browser envelope tunnel)
+        middleware/           # Alphabetical execution order
+          50-auth.ts          # Basic auth (skips /health)
+        db/                   # createDbKit wiring + schema
+          index.ts            # resolveDbUrl + createDbKit({ databaseUrl })
+          schema.ts
+          seed.ts             # CLI entry
+          migrations/
+        cache.ts              # createCacheKit({ cacheUrl })
+        storage.ts            # createStorageKit({ buckets, signingKey, s3, kvBindingName })
+        types.ts              # EnvVars, CfBindings, AppEnv
+      routes/                 # TanStack Start file-based routes
+      router.tsx              # Router init + client Sentry setup
+      start.ts                # TanStack Start server entry
+    vite.config.ts            # acmeServer({ baseDir, apps, middlewareDir })
+  server/                     # @acme/server — nitro + Hono glue
+    src/vite.ts               # acmeServer() vite plugin
+    src/handler.ts            # createApiEventHandler() wrap
+    src/env.ts                # createEnvProxy()
+    src/nitro/                # Built-in nitro error handler + middleware
+  db/                         # @acme/db — createDbKit + resolver
+  cache/                      # @acme/cache — createCacheKit + resolver
+  storage/                    # @acme/storage — createStorageKit + drivers
+  sentry/                     # @acme/sentry — client / hono / server glue
+  tsconfig/                   # Shared TypeScript configs
+  ui/                         # @acme/ui — design tokens, CSS reset, components
 ```
 
-## How the API is Embedded
+## How the App is Embedded
 
-Nitro catch-all handlers at `server/routes/api/[...].ts` and
-`server/routes/media/[...].ts` forward requests to their respective
-Hono apps. Both use the shared `createApiEventHandler()` which wraps
-the request in a `createEnvProxy()` (so `env.X` falls back to
-`process.env.X`) and Sentry error tracking.
+`packages/app/vite.config.ts` uses the `acmeServer()` vite plugin
+from `@acme/server/vite`:
+
+```ts
+acmeServer({
+  baseDir: "./src/server",
+  apps: ["api", "media", "health", "sentry"],
+  middlewareDir: "middleware"
+});
+```
+
+Each entry in `apps` resolves to `<name>/app.ts` under `baseDir` and
+is registered as a programmatic, lazy-loaded Nitro handler at
+`/<name>/**`. `middlewareDir` is scanned alphabetically for request
+middleware. Nitro's file-based scanning is disabled
+(`serverDir: false`) so there's no double-mounting.
+
+Each Hono app is wrapped with `createApiEventHandler()`, which
+applies `createEnvProxy()` (so `env.X` falls back to `process.env.X`
+outside CF) and `withSentry()` error capture.
+
+The plugin also collects `cloudflareExternals` from every workspace
+dep's `package.json` and feeds them into rolldown's `external` list —
+so Node-only drivers (`@libsql/client`, `drizzle-orm/libsql`,
+`iovalkey`, `unstorage/drivers/fs`) are excluded from the worker
+bundle automatically.
+
+## Kit-Factory Packages
+
+`@acme/db`, `@acme/cache`, and `@acme/storage` each expose a
+`createXKit({ ... })` factory. The app wires each one in a single
+file (`src/server/db/index.ts`, `cache.ts`, `storage.ts`) with
+env-accessor callbacks; the factory returns pre-bound `resolveX()`
+and a Hono `xMiddleware`. Runtime selection (workerd vs Node) lives
+inside each package's resolver.
 
 ## Database Abstraction
 
-The DB driver is resolved at request time based on the runtime:
+```ts
+createDbKit({
+  schema,
+  databaseUrl: (env) => resolveDbUrl(env.DATABASE_URL)
+});
+// → { resolveDatabase, dbMiddleware, seed }
+```
 
-- **Cloudflare (workerd)**: D1 via `drizzle-orm/d1`
-- **Node.js / Docker**: libsql via `@libsql/client`
-- **Dev**: local SQLite at `./sqlite.db`
+`databaseUrl` returns a non-undefined string; the callback is only
+invoked for the libsql path (lazy via thunk). The app's
+`resolveDbUrl` throws in production when `DATABASE_URL` is missing
+and defaults to `file:sqlite.db` in dev.
 
-The Hono middleware `dbMiddleware` injects the resolved Drizzle
-instance via `context.set("db", ...)`, so handlers are driver-agnostic.
+Runtime resolution:
+
+- **Cloudflare (workerd)**: D1 via `env.DB` binding + `drizzle-orm/d1`
+- **Node.js / Docker**: libsql via `@libsql/client` (dynamic import
+  keeps `node:fs` out of the worker bundle)
+
+`dbMiddleware` injects the resolved Drizzle instance via
+`context.set("db", ...)`, so handlers are driver-agnostic. `seed(url, path)`
+is CLI-only: caller provides the url string directly.
 
 ## Cache Abstraction
 
-The cache driver is resolved at request time, mirroring the
-database layer:
+```ts
+createCacheKit({ cacheUrl: (env) => env.CACHE_URL });
+// → { resolveCache, cacheMiddleware }
+```
 
-- **Cloudflare (workerd)**: KV namespace bound as `CACHE`
-- **Docker compose**: Valkey via `iovalkey`, when `CACHE_URL` is set
-  (e.g. `redis://valkey:6379`)
+- **Cloudflare (workerd)**: KV via `env.CACHE` binding
+- **Docker compose**: Valkey (`iovalkey`) when `CACHE_URL` is set
 - **Dev / single-container Docker**: in-memory `Map` with lazy TTL
   eviction
 
-The Hono middleware `cacheMiddleware` injects the resolved cache
-via `context.set("cache", ...)`. The interface is intentionally
-minimal — `get`, `set(key, value, ttl?)`, `delete` — and values are
-strings, so callers handle their own serialization.
+Interface is intentionally minimal — `get`, `set(key, value, ttl?)`,
+`delete`, values are strings. Callers own their serialization.
 
 ## Storage Abstraction
 
 File storage uses [unstorage](https://unstorage.unjs.io/) with
-multiple driver backends. Buckets are defined in `storage/buckets.ts`
-— the single source of truth for bucket names, access policies, and
-per-bucket config accessors.
-
-### Buckets
-
-Each bucket declares accessor functions that read from the env:
+multiple driver backends. Buckets are declared inline in the app's
+`src/server/storage.ts` via `createStorageKit`:
 
 ```ts
-export const BUCKETS = {
-  public: {
-    public: true,
-    r2Binding: (env) => env.STORAGE_PUBLIC,
-    s3BucketName: (env) => env.S3_BUCKET_PUBLIC ?? "acme-public",
-    baseUrl: (env) => env.STORAGE_URL_PUBLIC ?? null,
-    keyPrefix: (env) => env.STORAGE_PREFIX_PUBLIC ?? null,
+createStorageKit({
+  signingKey: (env) => env.STORAGE_SIGNING_KEY,
+  kvBindingName: (env) => env.KV_STORAGE,
+  s3: (env) => /* { endpoint, accessKeyId, secretAccessKey, region } | undefined */,
+  buckets: {
+    public: {
+      public: true,
+      r2Binding: (env) => env.STORAGE_PUBLIC,
+      s3BucketName: (env) => env.S3_BUCKET_PUBLIC ?? "acme-public",
+      baseUrl: (env) => env.STORAGE_URL_PUBLIC ?? null,
+      keyPrefix: (env) => env.STORAGE_PREFIX_PUBLIC ?? null,
+    },
+    private: { /* ... */ },
   },
-  private: { ... },
-};
+})
 ```
+
+Each bucket is a single source of truth for its access policy and
+per-env accessors. The kit returns `resolveStorage`,
+`storageMiddleware`, `createMediaRoute`, `presignUrl`,
+`verifyHmacToken`, plus url helpers.
 
 ### Driver Resolution
 
-`resolveBucket()` in `storage/resolve.ts` tries each backend in
-priority order — the first one configured wins:
+The kit's internal `resolveBucket()` tries each backend in priority
+order — the first one configured wins:
 
 1. **R2 binding** — Cloudflare Workers only, requires billing
 2. **KV fallback** — Cloudflare Workers only, free tier via
@@ -135,15 +169,15 @@ After resolution, a per-bucket `keyPrefix` is applied if configured
 
 ### Adding a New Bucket
 
-1. Add an entry to `BUCKETS` in `storage/buckets.ts` with its
-   accessor functions.
-2. Add matching bindings to `CfBindings` (`server/types.ts`) and
-   `wrangler.json` (Cloudflare) or `compose.yaml` (Docker).
+1. Add an entry to the `buckets` object in `src/server/storage.ts`
+   with its accessor functions.
+2. Add matching bindings to `CfBindings` (`src/server/types.ts`)
+   and `wrangler.json` (Cloudflare) or `compose.yaml` (Docker).
 3. Media routes and storage resolution are automatic.
 
 ### Uploading Files
 
-Domain handlers use `storeFile()` from `storage/helpers.ts`:
+Domain handlers use `storeFile()` from `@acme/storage/helpers`:
 
 ```ts
 const { key } = await storeFile(context.var.storage.public, file);
@@ -156,9 +190,11 @@ unstorage's `setMeta` — stored as a `key$` sidecar entry).
 
 ## Media Routes
 
-The Hono app at `media/app.ts` serves files at
-`GET /media/<bucket>/:key`. Routes are auto-mounted from
-`BUCKET_NAMES` — adding a bucket requires no manual wiring.
+The Hono app at `src/server/media/app.ts` mounts
+`createMediaRoute()` (from the storage kit) and serves files at
+`GET /media/<bucket>/:key`. Per-bucket routes are auto-mounted from
+the kit's `buckets` config — adding a bucket requires no manual
+wiring.
 
 **Access control:**
 
@@ -176,7 +212,7 @@ The Hono app at `media/app.ts` serves files at
 
 ## Internal API Calls (`apiFetch`)
 
-`web/api-client.ts` exports `apiFetch(path, init?)` — an isomorphic
+`src/api-client.ts` exports `apiFetch(path, init?)` — an isomorphic
 fetch wrapper built with `createIsomorphicFn`:
 
 - **Client**: plain `fetch` with relative path.
@@ -184,9 +220,9 @@ fetch wrapper built with `createIsomorphicFn`:
   and forwards `authorization`, `cookie`, `accept-language`, and
   `x-forwarded-for` headers from the incoming request.
 
-Nitro's internal `serverFetch` can't be used from `web/` code
-(export conditions don't match the client/SSR build). The server
-path makes a real HTTP request to itself.
+Nitro's internal `serverFetch` can't be used from client-reachable
+code (export conditions don't match the client/SSR build). The
+server path makes a real HTTP request to itself.
 
 ## URL Signing & Presigned URLs
 
@@ -220,8 +256,11 @@ HMAC tokens use constant-time comparison to prevent timing attacks.
 Sentry is initialized in three places — each runtime context has
 different error surfaces:
 
-1. **API** (`@acme/sentry/api`): Hono `onError` handler.
-   Skips 4xx, returns `{ error, sentryEventId }` for 5xx.
+1. **Hono apps** (`@acme/sentry/hono`): `sentryHonoErrorHandler`
+   onError handler + `withSentry` wrap (applied by
+   `createApiEventHandler` to every app registered via
+   `acmeServer({ apps })`). Skips 4xx, returns
+   `{ error, sentryEventId }` for 5xx.
 
 2. **SSR** (`@acme/sentry/server`):
    `CloudflareClient` for render errors. Flushes before responding.
@@ -230,7 +269,8 @@ different error surfaces:
    `ErrorBoundary` at the root. Uses a dummy DSN — the real one
    never reaches the browser.
 
-The client tunnel at `/api/sentry` receives browser envelopes,
+The client tunnel at `/sentry` (a Hono app registered via
+`acmeServer({ apps: [..., "sentry"] })`) receives browser envelopes,
 rewrites the DSN header, and forwards to Sentry's ingest. This
 bypasses ad-blockers and keeps the DSN out of client bundles.
 
@@ -281,7 +321,7 @@ Two workflows in `.github/workflows/`:
    configured, the signing key is empty (S3 presigning takes over).
 8. Build with `NITRO_PRESET=cloudflare-pages`
 9. Deploy to Cloudflare Pages
-10. Health check against `/api/health`
+10. Health check against `/health`
 
 **`ci-cleanup-preview.yml`** (PR closed): deletes the preview D1
 database and KV namespace.
