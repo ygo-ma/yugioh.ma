@@ -1,6 +1,5 @@
 import { createMiddleware } from "hono/factory";
 import { resolveDatabase } from "./resolve";
-import { runSeed } from "./seed";
 import type { Database, DbBindings, Schema } from "./types";
 
 export type { Database, DbBindings } from "./types";
@@ -41,6 +40,8 @@ export function createDbKit<TEnv, TSchema extends Schema>({
   const seed = async (path: string) => {
     const url = databaseUrl(process.env as unknown as TEnv);
     const db = await resolveDatabase({ url, schema });
+    // Dynamic: keeps node:fs out of the CF worker bundle.
+    const { runSeed } = await import("./seed");
     await runSeed(db, path);
   };
 
