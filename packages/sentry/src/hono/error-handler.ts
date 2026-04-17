@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/cloudflare";
 import type { ErrorHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
 
-interface SentryHonoErrorHandlerOptions {
+export interface SentryHonoErrorHandlerOptions {
   /**
    * User-Agent value whose errors should not be forwarded to Sentry.
    * Exact match. The handler still enriches the scope and returns the
