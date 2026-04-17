@@ -47,6 +47,24 @@ function middleware(handler: string): NitroEventHandler {
   return { route: "", handler, middleware: true };
 }
 
+type ExternalOption = NonNullable<
+  NonNullable<NitroPluginConfig["rolldownConfig"]>["external"]
+>;
+
+function mergeExternal(
+  own: string[],
+  user: ExternalOption | undefined,
+): ExternalOption {
+  if (typeof user === "function") {
+    return (id, parentId, isResolved) => {
+      return own.includes(id) || user(id, parentId, isResolved);
+    };
+  }
+
+  const userList = Array.isArray(user) ? user : user ? [user] : [];
+  return [...own, ...userList];
+}
+
 export function acmeServer(options: AcmeServerOptions = {}): PluginOption {
   const isCf = process.env.NITRO_PRESET?.startsWith("cloudflare") ?? false;
   const pkg = import.meta.dirname;
@@ -69,15 +87,24 @@ export function acmeServer(options: AcmeServerOptions = {}): PluginOption {
     handlers.push({ route: `${route}/**`, handler: id, lazy: true });
   }
 
+  const {
+    virtual: userVirtual,
+    handlers: userHandlers = [],
+    rolldownConfig: userRolldownConfig = {},
+    ...restNitroOptions
+  } = options.nitro ?? {};
+  const { external: userExternal, ...restRolldownConfig } = userRolldownConfig;
+  const external = isCf ? collectExternals(root) : [];
+
   return nitro({
     serverDir: false,
     errorHandler: resolve(pkg, "nitro/error"),
-    virtual: { ...virtual, ...options.nitro?.virtual },
-    handlers: [...handlers, ...(options.nitro?.handlers ?? [])],
+    ...restNitroOptions,
+    virtual: { ...virtual, ...userVirtual },
+    handlers: [...handlers, ...userHandlers],
     rolldownConfig: {
-      external: isCf ? collectExternals(root) : [],
-      ...options.nitro?.rolldownConfig,
+      ...restRolldownConfig,
+      external: mergeExternal(external, userExternal),
     },
-    ...options.nitro,
   });
 }
