@@ -6,6 +6,7 @@ minimumReleaseAge: 2880
 
 onlyBuiltDependencies:
   - "@sentry/cli"
+  - better-sqlite3
   - esbuild
   - sharp
   - workerd
@@ -25,12 +26,14 @@ catalog:
   "@tanstack/react-router": "1.168.22"
   "@tanstack/react-start": "1.167.41"
   "@testing-library/react": "16.3.2"
+  "@types/better-sqlite3": "7.6.13"
   "@types/node": "24.12.2"
   "@types/react": "19.2.14"
   "@types/react-dom": "19.2.3"
   "@vitejs/plugin-react": "6.0.1"
   "@vitest/browser-playwright": "4.1.4"
   "@vitest/coverage-v8": "4.1.4"
+  better-sqlite3: "12.9.0"
   classnames: "2.5.1"
   drizzle-kit: "0.31.10"
   drizzle-orm: "0.45.2"

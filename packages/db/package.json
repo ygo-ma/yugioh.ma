@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@libsql/client": "catalog:",
+    "better-sqlite3": "catalog:",
     "drizzle-orm": "catalog:"
   },
   "devDependencies": {
     "@acme/tsconfig": "workspace:*",
     "@cloudflare/workers-types": "catalog:",
+    "@types/better-sqlite3": "catalog:",
     "@types/node": "catalog:",
     "hono": "catalog:",
     "typescript": "catalog:"
@@ -26,6 +28,8 @@
   },
   "cloudflareExternals": [
     "@libsql/client",
+    "better-sqlite3",
+    "drizzle-orm/better-sqlite3",
     "drizzle-orm/libsql"
   ]
 }

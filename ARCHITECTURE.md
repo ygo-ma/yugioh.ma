@@ -94,16 +94,21 @@ createDbKit({
 // → { resolveDatabase, dbMiddleware, seed }
 ```
 
-`databaseUrl` returns a non-undefined string; the callback is only
-invoked for the libsql path (lazy via thunk). The app's
-`resolveDbUrl` throws in production when `DATABASE_URL` is missing
-and defaults to `file:sqlite.db` in dev.
+`databaseUrl` returns a non-undefined string; the callback is
+invoked lazily (via thunk) on any non-workerd path — D1 skips it
+entirely. The app's `resolveDbUrl` throws in production when
+`DATABASE_URL` is missing and defaults to `file:sqlite.db` in dev.
 
 Runtime resolution:
 
 - **Cloudflare (workerd)**: D1 via `env.DB` binding + `drizzle-orm/d1`
-- **Node.js / Docker**: libsql via `@libsql/client` (dynamic import
-  keeps `node:fs` out of the worker bundle)
+- **Node.js + `file:` URL**: `better-sqlite3` (sync native binding,
+  faster than libsql for on-disk access)
+- **Node.js + remote URL** (`http://`, `libsql://`, …): libsql via
+  `@libsql/client`
+
+All drivers load via dynamic import so native and Node-only modules
+stay out of the worker bundle.
 
 `dbMiddleware` injects the resolved Drizzle instance via
 `context.set("db", ...)`, so handlers are driver-agnostic. `seed(url, path)`
@@ -261,12 +266,15 @@ different error surfaces:
    `createApiEventHandler` to every app registered via
    `acmeServer({ apps })`). `HTTPException`s pass through via
    `error.getResponse()` — body shape is whatever the thrower set;
-   5xx variants are captured to Sentry, 4xx aren't. Other uncaught
-   errors are captured and returned as JSON 500
-   `{ error, sentryEventId }` (event ID is `null` when capture was
-   suppressed or the SDK isn't initialized). Pass `ignoreUserAgent`
-   to suppress capture for a probe client (e.g. the CI health probe
-   whose 5xx during post-deploy warmup is expected noise).
+   5xx variants are logged to stderr and captured to Sentry, 4xx
+   aren't. Other uncaught errors are logged, captured, and returned
+   as JSON 500 `{ error, sentryEventId }` (event ID is `null` when
+   capture was suppressed or the SDK isn't initialized). stderr
+   logging is what makes backend errors visible in `docker logs`
+   when no `SENTRY_DSN` is configured. Pass `ignoreUserAgent` to
+   suppress **both** log and capture for a probe client (e.g. the CI
+   health probe whose 5xx during post-deploy warmup is expected
+   noise).
 
 2. **SSR** (`@acme/sentry/server`):
    `CloudflareClient` for render errors. Flushes before responding.
@@ -286,11 +294,11 @@ drops these to prevent double-reporting.
 
 ## Deployment
 
-| Layer   | Cloudflare      | Docker (self-hosted)  | Dev / Standalone        |
-| ------- | --------------- | --------------------- | ----------------------- |
-| DB      | D1 (drizzle/d1) | sqld (drizzle/libsql) | SQLite (drizzle/libsql) |
-| Cache   | KV              | Valkey (iovalkey)     | In-memory               |
-| Storage | R2 or KV or S3  | MinIO (unstorage/s3)  | Filesystem (unstorage)  |
+| Layer   | Cloudflare      | Docker (self-hosted)  | Dev / Standalone                |
+| ------- | --------------- | --------------------- | ------------------------------- |
+| DB      | D1 (drizzle/d1) | sqld (drizzle/libsql) | SQLite (drizzle/better-sqlite3) |
+| Cache   | KV              | Valkey (iovalkey)     | In-memory                       |
+| Storage | R2 or KV or S3  | MinIO (unstorage/s3)  | Filesystem (unstorage)          |
 
 ### Docker
 
@@ -330,9 +338,9 @@ Two workflows in `.github/workflows/`:
 10. Health check against `/health` — the CI probe sets a
     `User-Agent: acme-ci-health-probe`. The `/health` route's
     `createSentryHonoErrorHandler({ ignoreUserAgent: "..." })` skips
-    Sentry capture for that UA during the post-deploy warmup window
-    (bindings can briefly race the worker). Other callers still
-    surface 5xx to Sentry.
+    stderr logging and Sentry capture for that UA during the
+    post-deploy warmup window (bindings can briefly race the worker).
+    Other callers still surface 5xx to both.
 
 **`ci-cleanup-preview.yml`** (PR closed): deletes the preview D1
 database and KV namespace.

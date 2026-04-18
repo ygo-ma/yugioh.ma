@@ -1,11 +1,24 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { getRuntimeKey } from "hono/adapter";
+import { fileURLToPath } from "node:url";
 import type { Database, Schema } from "./types";
 
 interface ResolveDatabaseOptions<TSchema extends Schema> {
   d1?: D1Database;
   url: string | (() => string);
   schema: TSchema;
+}
+
+// WHATWG `file://` URLs go through Node's parser (percent-decoding,
+// host handling, Windows drive letters). The relaxed forms libsql
+// accepts (`file:sqlite.db`, `file:/abs/path`) aren't valid WHATWG
+// file URLs, so we strip the scheme manually for those.
+function toDatabasePath(url: string): string {
+  if (url.startsWith("file://")) {
+    return fileURLToPath(url);
+  }
+
+  return url.slice("file:".length);
 }
 
 export async function resolveDatabase<TSchema extends Schema>({
@@ -22,6 +35,13 @@ export async function resolveDatabase<TSchema extends Schema>({
     return drizzle(d1, { schema });
   }
 
+  const resolved = typeof url === "function" ? url() : url;
+
+  if (resolved.startsWith("file:")) {
+    const { drizzle } = await import("drizzle-orm/better-sqlite3");
+    return drizzle(toDatabasePath(resolved), { schema });
+  }
+
   const { drizzle } = await import("drizzle-orm/libsql");
-  return drizzle(typeof url === "function" ? url() : url, { schema });
+  return drizzle(resolved, { schema });
 }
