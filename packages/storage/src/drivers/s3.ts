@@ -46,6 +46,8 @@ export class S3Driver implements StorageDriver {
       return null;
     }
     if (!response.ok || !response.body) {
+      // Drain the body so undici can release the socket back to the pool.
+      await response.body?.cancel();
       throw new Error(`S3 GET failed: ${response.status}`);
     }
 
@@ -99,6 +101,8 @@ export class S3Driver implements StorageDriver {
       headers,
       body: validatingStream(body, sizeHint),
     });
+    // Body never read; cancel so undici frees the socket.
+    await response.body?.cancel();
 
     if (!response.ok) {
       throw new Error(`S3 PUT failed: ${response.status}`);
@@ -109,6 +113,7 @@ export class S3Driver implements StorageDriver {
     const response = await this.client.fetch(this.url(key), {
       method: "DELETE",
     });
+    await response.body?.cancel();
 
     // 404 is fine — already gone is the desired end-state.
     if (!response.ok && response.status !== 404) {
@@ -118,6 +123,10 @@ export class S3Driver implements StorageDriver {
 
   async has(key: string): Promise<boolean> {
     const response = await this.client.fetch(this.url(key), { method: "HEAD" });
+    // HEAD spec says no body, but undici still creates an empty stream
+    // that holds the socket until cancelled.
+    await response.body?.cancel();
+
     if (response.status === 404) {
       return false;
     }
