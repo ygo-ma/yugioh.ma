@@ -261,12 +261,15 @@ different error surfaces:
    `createApiEventHandler` to every app registered via
    `acmeServer({ apps })`). `HTTPException`s pass through via
    `error.getResponse()` — body shape is whatever the thrower set;
-   5xx variants are captured to Sentry, 4xx aren't. Other uncaught
-   errors are captured and returned as JSON 500
-   `{ error, sentryEventId }` (event ID is `null` when capture was
-   suppressed or the SDK isn't initialized). Pass `ignoreUserAgent`
-   to suppress capture for a probe client (e.g. the CI health probe
-   whose 5xx during post-deploy warmup is expected noise).
+   5xx variants are logged to stderr and captured to Sentry, 4xx
+   aren't. Other uncaught errors are logged, captured, and returned
+   as JSON 500 `{ error, sentryEventId }` (event ID is `null` when
+   capture was suppressed or the SDK isn't initialized). stderr
+   logging is what makes backend errors visible in `docker logs`
+   when no `SENTRY_DSN` is configured. Pass `ignoreUserAgent` to
+   suppress **both** log and capture for a probe client (e.g. the CI
+   health probe whose 5xx during post-deploy warmup is expected
+   noise).
 
 2. **SSR** (`@acme/sentry/server`):
    `CloudflareClient` for render errors. Flushes before responding.
@@ -330,9 +333,9 @@ Two workflows in `.github/workflows/`:
 10. Health check against `/health` — the CI probe sets a
     `User-Agent: acme-ci-health-probe`. The `/health` route's
     `createSentryHonoErrorHandler({ ignoreUserAgent: "..." })` skips
-    Sentry capture for that UA during the post-deploy warmup window
-    (bindings can briefly race the worker). Other callers still
-    surface 5xx to Sentry.
+    stderr logging and Sentry capture for that UA during the
+    post-deploy warmup window (bindings can briefly race the worker).
+    Other callers still surface 5xx to both.
 
 **`ci-cleanup-preview.yml`** (PR closed): deletes the preview D1
 database and KV namespace.
