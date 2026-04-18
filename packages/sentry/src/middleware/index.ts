@@ -13,11 +13,15 @@ import { CAPTURED } from "../shared/captured";
  *   non-enumerable (it won't show up in `JSON.stringify` or `Object.keys`).
  *
  * `.server()` — runs on the backend when a server function throws.
- *   Calls `Sentry.captureException` so the error is reported server-side.
- *   `@sentry/cloudflare` is lazy-imported so the client bundle stays slim.
- *   TanStack Start's control-flow throws (`redirect()` Responses, bare
- *   `Response` instances) are re-thrown without capture — they are the
- *   framework's normal way to return HTTP responses, not errors.
+ *   Logs the error to stderr (so it's visible in `docker logs` without a
+ *   DSN, and so `<form method="post">` submits — which TanStack returns
+ *   as empty 200s without its own logging — don't go silent) and calls
+ *   `Sentry.captureException` so the error is reported server-side.
+ *   `@sentry/cloudflare` is lazy-imported so the client bundle stays
+ *   slim. TanStack Start's control-flow throws (`redirect()` Responses,
+ *   bare `Response` instances) are re-thrown without logging or capture
+ *   — they are the framework's normal way to return HTTP responses, not
+ *   errors.
  *
  * Register it in your TanStack Start config:
  *
@@ -49,6 +53,8 @@ export const sentryFunctionMiddleware = createMiddleware({ type: "function" })
       if (isRedirect(error) || error instanceof Response) {
         throw error;
       }
+
+      console.error(error);
 
       try {
         const Sentry = await import("@sentry/cloudflare");

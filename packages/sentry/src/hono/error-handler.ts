@@ -20,13 +20,15 @@ export interface SentryHonoErrorHandlerOptions {
  *
  * - `HTTPException`s pass through via `error.getResponse()` — body
  *   shape is whatever the thrower set. Ones with `status >= 500` are
- *   reported to Sentry; 4xx aren't (they're expected client-error
- *   responses).
- * - Anything else is captured and returned as a JSON 500
- *   `{ error, sentryEventId }` so the frontend can surface the event
- *   ID for support. `sentryEventId` is `null` when capture was
- *   suppressed (caller UA matched `ignoreUserAgent`) or the Sentry
- *   client isn't initialized.
+ *   reported to Sentry and logged to stderr; 4xx aren't (they're
+ *   expected client-error responses).
+ * - Anything else is logged to stderr, captured, and returned as a
+ *   JSON 500 `{ error, sentryEventId }` so the frontend can surface
+ *   the event ID for support. `sentryEventId` is `null` when capture
+ *   was suppressed (caller UA matched `ignoreUserAgent`) or the
+ *   Sentry client isn't initialized.
+ * - `ignoreUserAgent` suppresses **both** the stderr log and the
+ *   Sentry capture — the normal response still returns.
  *
  * The current Sentry scope is enriched with the request IP, URL, and
  * method regardless of whether the error is captured.
@@ -70,13 +72,18 @@ export function createSentryHonoErrorHandler(
 
     if (error instanceof HTTPException) {
       if (error.status >= 500 && shouldCapture) {
+        console.error(error);
         Sentry.captureException(error);
       }
 
       return error.getResponse();
     }
 
-    const eventId = shouldCapture ? Sentry.captureException(error) : null;
+    let eventId: string | null = null;
+    if (shouldCapture) {
+      console.error(error);
+      eventId = Sentry.captureException(error);
+    }
     return context.json(
       { error: "Internal Server Error", sentryEventId: eventId ?? null },
       500,
