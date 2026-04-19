@@ -9,6 +9,10 @@ import {
   type StoragePutOptions,
 } from "../driver";
 
+// 20 MiB cap (KV's hard ceiling is 25). Headroom for the worker heap,
+// and a signal that larger blobs belong on R2/S3 — KV is the fallback.
+const KV_BUFFER_LIMIT = 20 * 1024 * 1024;
+
 // KV has no native HTTP metadata, so contentType/cacheControl/size travel
 // inside the single 1024-byte metadata blob alongside user metadata. The
 // proxy serves cacheControl from there; direct access to KV is not exposed.
@@ -19,7 +23,9 @@ interface KvStoredMetadata {
   user: Record<string, string>;
 }
 
-/** KV binding driver: metadata stored via the binding's native metadata field. */
+/**
+ * KV binding driver: metadata stored via the binding's native metadata field.
+ */
 export class KvDriver implements StorageDriver {
   constructor(
     private readonly binding: KVNamespace,
@@ -73,7 +79,7 @@ export class KvDriver implements StorageDriver {
     const useStream = sizeHint !== undefined || body instanceof Uint8Array;
     const value = useStream
       ? validatingStream(body, sizeHint)
-      : await bufferBody(body);
+      : await bufferBody(body, KV_BUFFER_LIMIT);
     const size =
       sizeHint ?? (value instanceof Uint8Array ? value.byteLength : 0);
 

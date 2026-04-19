@@ -167,16 +167,43 @@ export function cacheControlFor(isPublic: boolean): string {
 }
 
 /**
- * Drains a stream into a Uint8Array. Used by drivers whose backends do not
- * accept streaming put bodies (KV, FS) so the public API stays uniform.
+ * Drains a stream into a Uint8Array. Aborts when the running total exceeds
+ * `maxBytes` so an unbounded source can't OOM the worker before the
+ * backend rejects it. Required - no safe default for an open buffer.
  */
 export async function bufferBody(
   body: ReadableStream<Uint8Array> | Uint8Array,
+  maxBytes: number,
 ): Promise<Uint8Array> {
   if (body instanceof Uint8Array) {
+    if (body.byteLength > maxBytes) {
+      const message = `body exceeds ${maxBytes} bytes (got ${body.byteLength})`;
+      throw new Error(message);
+    }
     return body;
   }
-  return new Uint8Array(await new Response(body).arrayBuffer());
+
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  // for-await-of cancels the source on throw - no explicit cancel needed.
+  for await (const chunk of body) {
+    total += chunk.byteLength;
+    if (total > maxBytes) {
+      const message = `body exceeds ${maxBytes} bytes`;
+      throw new Error(message);
+    }
+
+    chunks.push(chunk);
+  }
+
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
 }
 
 /**
