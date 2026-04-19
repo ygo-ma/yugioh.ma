@@ -1,4 +1,4 @@
-FROM node:24.14.1
+FROM node:24.15.0
 
 # Enable corepack for pnpm
 RUN corepack enable
