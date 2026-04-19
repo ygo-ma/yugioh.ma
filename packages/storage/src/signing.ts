@@ -1,3 +1,4 @@
+import { AwsClient } from "aws4fetch";
 import { HTTPException } from "hono/http-exception";
 import type { BucketMap, S3Credentials, S3Fn, SigningKeyFn } from "./types";
 import { encodeKeyPath } from "./url";
@@ -46,7 +47,6 @@ async function s3Presign(
     return null;
   }
 
-  const { AwsClient } = await import("aws4fetch");
   const url = new URL(`/${s3BucketName}/${encodeKeyPath(key)}`, creds.endpoint);
   url.searchParams.set("X-Amz-Expires", String(ttlSeconds));
 
