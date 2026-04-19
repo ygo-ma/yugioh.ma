@@ -125,14 +125,27 @@ export interface StorageDriver {
 }
 
 /**
- * Wraps a driver to prepend a `${prefix}:` to every key. Used for CI branch
- * isolation so multiple branches can share a single bucket without colliding.
+ * Character used by `prefixDriver` to join prefix and key.
+ * ASCII Unit Separator (U+001F) absent from any
+ * real-world key (filenames, URLs...).
+ */
+export const KEY_SEPARATOR = "\u001F";
+
+/**
+ * Wraps a driver to prepend `${prefix}${KEY_SEPARATOR}` to every key.
+ * Used for CI branch isolation so multiple branches can share a single
+ * bucket without colliding.
  */
 export function prefixDriver(
   inner: StorageDriver,
   prefix: string,
 ): StorageDriver {
-  const prefixed = (key: string) => `${prefix}:${key}`;
+  if (prefix.includes(KEY_SEPARATOR)) {
+    const message = `invalid prefix: contains reserved separator U+001F (${prefix})`;
+    throw new Error(message);
+  }
+
+  const prefixed = (key: string) => `${prefix}${KEY_SEPARATOR}${key}`;
 
   return {
     get: (key) => inner.get(prefixed(key)),

@@ -8,5 +8,5 @@ export type {
   StorageObject,
   StoragePutOptions,
 } from "./types";
-export { cacheControlFor } from "./driver";
+export { cacheControlFor, KEY_SEPARATOR } from "./driver";
 export { createStorageKit } from "./kit";
