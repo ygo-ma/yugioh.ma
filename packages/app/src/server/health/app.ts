@@ -30,7 +30,6 @@ async function checkStorage(env: AppEnv["Bindings"]) {
   try {
     const buckets = await resolveStorage(env);
     await Promise.all(
-      // has() maps to HeadObject (Class B on R2)
       Object.values(buckets).map((bucket) => bucket.has("_health")),
     );
   } catch {
