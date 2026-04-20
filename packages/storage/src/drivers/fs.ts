@@ -4,7 +4,9 @@ import { access, mkdir, open, rename, rm } from "node:fs/promises";
 import { dirname, resolve as resolvePath, sep } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { z } from "zod";
 import {
+  METADATA_KEY_RE,
   validateMetadataKeys,
   validatingStream,
   type DriverOptions,
@@ -18,11 +20,16 @@ const HEADER_LEN_BYTES = 4;
 // allocate gigabytes when reading. Real headers are a few hundred bytes.
 const MAX_HEADER_BYTES = 64 * 1024;
 
-interface FsHeader {
-  contentType: string;
-  cacheControl?: string;
-  metadata: Record<string, string>;
-}
+const kebabKey = z
+  .string()
+  .regex(METADATA_KEY_RE, "must match /^[a-z0-9][a-z0-9-]*$/");
+
+const FsHeaderSchema = z.object({
+  contentType: z.string().min(1),
+  cacheControl: z.string().optional(),
+  metadata: z.record(kebabKey, z.string()),
+});
+type FsHeader = z.infer<typeof FsHeaderSchema>;
 
 interface ParsedHeader {
   header: FsHeader;
@@ -58,14 +65,19 @@ async function readHeader(
       `FS object truncated: header read ${headerRead.bytesRead}/${headerLen} bytes`,
     );
   }
-  const header = JSON.parse(headerBuf.toString("utf8")) as FsHeader;
+  let header: FsHeader;
+  try {
+    header = FsHeaderSchema.parse(JSON.parse(headerBuf.toString("utf8")));
+  } catch (cause) {
+    const message = `FS object header invalid: ${(cause as Error).message}`;
+    throw new Error(message, { cause });
+  }
 
   const dataOffset = HEADER_LEN_BYTES + headerLen;
   const fileSize = (await fd.stat()).size;
   if (fileSize < dataOffset) {
-    throw new Error(
-      `FS object truncated: file size ${fileSize} < header end ${dataOffset}`,
-    );
+    const message = `FS object truncated: file size ${fileSize} < header end ${dataOffset}`;
+    throw new Error(message);
   }
 
   return { header, dataOffset, size: fileSize - dataOffset };

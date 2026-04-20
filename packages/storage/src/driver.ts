@@ -256,7 +256,7 @@ export function validatingStream(
   return body.pipeThrough(transform);
 }
 
-const METADATA_KEY_RE = /^[a-z0-9][a-z0-9-]*$/u;
+export const METADATA_KEY_RE = /^[a-z0-9][a-z0-9-]*$/u;
 
 /**
  * Throws on any metadata key that wouldn't survive a round-trip through

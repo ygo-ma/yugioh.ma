@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "aws4fetch": "catalog:",
-    "uuid": "catalog:"
+    "uuid": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@acme/tsconfig": "workspace:*",
