@@ -223,6 +223,12 @@ export class FsDriver implements StorageDriver {
 
     const header: FsHeader = { contentType, cacheControl, metadata };
     const headerBytes = Buffer.from(JSON.stringify(header));
+    if (headerBytes.length > MAX_HEADER_BYTES) {
+      const message =
+        `FS object header would be ${headerBytes.length} bytes, ` +
+        `exceeds ${MAX_HEADER_BYTES}`;
+      throw new Error(message);
+    }
     const lenBytes = Buffer.alloc(HEADER_LEN_BYTES);
     lenBytes.writeUInt32BE(headerBytes.length, 0);
 
