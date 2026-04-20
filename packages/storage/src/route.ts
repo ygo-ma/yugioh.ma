@@ -25,7 +25,7 @@ function isProxyDisabled<TEnv>(
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ): boolean {
-  if (config.baseUrl(env)) {
+  if (config.public && config.baseUrl(env)) {
     return true;
   }
 

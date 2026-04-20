@@ -16,11 +16,7 @@ export interface StorageBindings {
 
 export type UserEnv = unknown;
 
-export interface BucketConfig<TEnv = UserEnv> {
-  /**
-   * Whether anonymous reads are allowed (no auth, public Cache-Control).
-   */
-  public: boolean;
+interface BucketConfigBase<TEnv = UserEnv> {
   /**
    * Returns the R2 binding for this bucket, if configured.
    */
@@ -30,14 +26,39 @@ export interface BucketConfig<TEnv = UserEnv> {
    */
   s3BucketName: (env: TEnv) => string;
   /**
-   * Direct URL base for serving files. Null = use proxy.
-   */
-  baseUrl: (env: TEnv) => string | null;
-  /**
    * Optional key prefix for namespacing within the bucket.
    */
   keyPrefix: (env: TEnv) => string | null;
 }
+
+/**
+ * Public buckets allow anonymous reads. They may declare a `baseUrl`
+ * for direct CDN access; the proxy then redirects clients there.
+ */
+export interface PublicBucketConfig<
+  TEnv = UserEnv,
+> extends BucketConfigBase<TEnv> {
+  public: true;
+  /**
+   * Direct URL base for serving files. Null = serve via proxy.
+   */
+  baseUrl: (env: TEnv) => string | null;
+}
+
+/**
+ * Private buckets require a signing path (HMAC or S3 presign).
+ * `baseUrl` is intentionally absent: presignUrl would hand out
+ * unsigned URLs, defeating "private".
+ */
+export interface PrivateBucketConfig<
+  TEnv = UserEnv,
+> extends BucketConfigBase<TEnv> {
+  public: false;
+}
+
+export type BucketConfig<TEnv = UserEnv> =
+  | PublicBucketConfig<TEnv>
+  | PrivateBucketConfig<TEnv>;
 
 export type BucketMap<TEnv = UserEnv, TBucket extends string = string> = Record<
   TBucket,

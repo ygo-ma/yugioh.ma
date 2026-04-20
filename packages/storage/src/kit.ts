@@ -9,10 +9,6 @@ import { createUrlUtils } from "./url";
  * Boot-time check: every private bucket must have a signing path
  * (HMAC signing key or S3 presign creds). Without one, the proxy
  * route would 503 on every request.
- *
- * `baseUrl` deliberately does *not* satisfy the check: presignUrl
- * hands out unsigned URLs for any baseUrl bucket regardless of
- * `public` flag, which doesn't authorise private content.
  */
 function validateBucketConfig<TEnv extends object>(
   bucketConfig: BucketMap<TEnv>,

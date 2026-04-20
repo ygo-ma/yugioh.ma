@@ -41,7 +41,6 @@ export const {
       public: false,
       r2Binding: (env) => env.STORAGE_PRIVATE,
       s3BucketName: (env) => env.S3_BUCKET_PRIVATE ?? "acme-private",
-      baseUrl: () => null,
       keyPrefix: (env) => env.STORAGE_PREFIX_PRIVATE ?? null,
     },
   },

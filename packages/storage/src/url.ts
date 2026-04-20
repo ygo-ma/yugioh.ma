@@ -29,10 +29,11 @@ export function createUrlUtils<TEnv, TBucket extends string>(
 
   /**
    * Returns a stable URL for a file.
-   * Bucket with a `baseUrl` -> direct URL, otherwise -> proxy path.
+   * Public bucket with `baseUrl` -> direct URL, otherwise -> proxy path.
    */
   function urlFor(bucket: TBucket, env: TEnv, key: string): string {
-    const base = bucketConfig[bucket].baseUrl(env);
+    const cfg = bucketConfig[bucket];
+    const base = cfg.public ? cfg.baseUrl(env) : null;
     if (base) {
       const path = encodeKeyPath(storageKey(bucket, env, key));
       return `${base.replace(/\/$/u, "")}/${path}`;

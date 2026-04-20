@@ -112,7 +112,8 @@ export function createPresignUrl<TEnv, TBucket extends string>(
   ): Promise<string> {
     const resolved = url.storageKey(bucket, env, key);
 
-    const directUrl = bucketConfig[bucket].baseUrl(env);
+    const cfg = bucketConfig[bucket];
+    const directUrl = cfg.public ? cfg.baseUrl(env) : null;
     if (directUrl) {
       return `${directUrl.replace(/\/$/u, "")}/${encodeKeyPath(resolved)}`;
     }
@@ -129,7 +130,7 @@ export function createPresignUrl<TEnv, TBucket extends string>(
 
     const s3Creds = s3(env);
     const s3Url = await s3Presign(
-      bucketConfig[bucket].s3BucketName(env),
+      cfg.s3BucketName(env),
       s3Creds,
       resolved,
       ttlSeconds,
@@ -138,7 +139,7 @@ export function createPresignUrl<TEnv, TBucket extends string>(
       return s3Url;
     }
 
-    if (bucketConfig[bucket].public) {
+    if (cfg.public) {
       return url.urlFor(bucket, env, key);
     }
 
