@@ -90,7 +90,7 @@ export function validateMetadataKeys(
     }
 
     const message =
-      `invalid metadata key: ${JSON.stringify(key)} must be` +
+      `invalid metadata key: ${JSON.stringify(key)} must be ` +
       "lowercase letters, digits, hyphens; starting with letter or digit";
     throw new Error(message);
   }
