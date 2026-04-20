@@ -14,6 +14,17 @@ import { encodeKeyPath } from "../url";
 
 const META_PREFIX = "x-amz-meta-";
 
+// aws4fetch retries 5xx + 429 itself with exponential backoff. Tuned down
+// from its default of 10 retries (~50s wall-time) to 3 (~1.5s).
+const STATUS_RETRIES = 3;
+const STATUS_RETRY_BASE_MS = 100;
+
+// Network-error retry (TypeError from fetch) for self-hosted providers
+// where TCP/TLS hiccups are common. aws4fetch's own loop only handles
+// status codes, not throws.
+const NETWORK_RETRY_ATTEMPTS = 3;
+const NETWORK_RETRY_BASE_MS = 100;
+
 /**
  * Builds a `StorageObjectHead` from response headers. Shared by `get`
  * (which then attaches the body) and `head`.
@@ -62,6 +73,8 @@ export class S3Driver implements StorageDriver {
       secretAccessKey: creds.secretAccessKey,
       region: creds.region ?? "auto",
       service: "s3",
+      retries: STATUS_RETRIES,
+      initRetryMs: STATUS_RETRY_BASE_MS,
     });
     this.endpoint = creds.endpoint;
     this.bucket = bucket;
@@ -74,8 +87,40 @@ export class S3Driver implements StorageDriver {
     ).toString();
   }
 
+  /**
+   * Retries `client.fetch` on network errors (TypeError) only.
+   * Status-code retry (5xx, 429) is handled by aws4fetch internally.
+   *
+   * Used for idempotent ops only. PUT skips this because the body
+   * may be a one-shot stream that can't be replayed.
+   */
+  // oxlint-disable eslint/no-await-in-loop -- retry loop is sequential by design
+  private async retryFetch(url: string, init?: RequestInit): Promise<Response> {
+    for (let attempt = 0; attempt < NETWORK_RETRY_ATTEMPTS; attempt += 1) {
+      try {
+        return await this.client.fetch(url, init);
+      } catch (err) {
+        if (
+          !(err instanceof TypeError) ||
+          attempt === NETWORK_RETRY_ATTEMPTS - 1
+        ) {
+          throw err;
+        }
+
+        const factor = 2 ** attempt;
+        const delay = NETWORK_RETRY_BASE_MS * factor * Math.random();
+        await new Promise((resolve) => {
+          setTimeout(resolve, delay);
+        });
+      }
+    }
+
+    throw new Error("retryFetch loop exhausted without return");
+  }
+  // oxlint-enable eslint/no-await-in-loop
+
   async get(key: string): Promise<StorageObject | null> {
-    const response = await this.client.fetch(this.url(key));
+    const response = await this.retryFetch(this.url(key));
     if (response.status === 404) {
       await response.body?.cancel();
       return null;
@@ -95,7 +140,7 @@ export class S3Driver implements StorageDriver {
   }
 
   async head(key: string): Promise<StorageObjectHead | null> {
-    const response = await this.client.fetch(this.url(key), { method: "HEAD" });
+    const response = await this.retryFetch(this.url(key), { method: "HEAD" });
     // HEAD spec says no body, but undici still creates an empty stream
     // that holds the socket until cancelled.
     await response.body?.cancel();
@@ -158,9 +203,7 @@ export class S3Driver implements StorageDriver {
   }
 
   async delete(key: string): Promise<void> {
-    const response = await this.client.fetch(this.url(key), {
-      method: "DELETE",
-    });
+    const response = await this.retryFetch(this.url(key), { method: "DELETE" });
     await response.body?.cancel();
 
     // 404 is fine: already gone is the desired end-state.
