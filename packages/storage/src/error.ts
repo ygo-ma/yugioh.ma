@@ -1,4 +1,4 @@
-export type StorageOp = "get" | "put" | "delete" | "has";
+export type StorageOp = "get" | "head" | "put" | "delete" | "has";
 
 export interface StorageErrorDetails {
   driver: string;

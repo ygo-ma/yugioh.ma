@@ -1,12 +1,13 @@
 import type { R2Bucket } from "@cloudflare/workers-types";
 import {
-  validateMetadataKeys,
   validatingStream,
   type DriverOptions,
   type StorageDriver,
   type StorageObject,
+  type StorageObjectHead,
   type StoragePutOptions,
 } from "../driver";
+import { validateMetadataKeys } from "../metadata-keys";
 
 /**
  * R2 binding driver: customMetadata + httpMetadata are stored natively.
@@ -65,6 +66,19 @@ export class R2Driver implements StorageDriver {
       httpMetadata: { contentType, cacheControl },
       customMetadata: metadata,
     });
+  }
+
+  async head(key: string): Promise<StorageObjectHead | null> {
+    const object = await this.binding.head(key);
+    if (!object) {
+      return null;
+    }
+
+    const { httpMetadata = {}, size, customMetadata: metadata = {} } = object;
+    const { contentType = "application/octet-stream", cacheControl } =
+      httpMetadata;
+
+    return { contentType, cacheControl, size, metadata };
   }
 
   async delete(key: string): Promise<void> {

@@ -1,17 +1,46 @@
 import { AwsClient } from "aws4fetch";
 import {
-  validateMetadataKeys,
   validatingStream,
   type DriverOptions,
   type StorageDriver,
   type StorageObject,
+  type StorageObjectHead,
   type StoragePutOptions,
 } from "../driver";
 import { StorageError } from "../error";
+import { validateMetadataKeys } from "../metadata-keys";
 import type { S3Credentials } from "../types";
 import { encodeKeyPath } from "../url";
 
 const META_PREFIX = "x-amz-meta-";
+
+/**
+ * Builds a `StorageObjectHead` from response headers. Shared by `get`
+ * (which then attaches the body) and `head`.
+ */
+function parseHead(headers: Headers): StorageObjectHead {
+  const metadata: Record<string, string> = {};
+  for (const [name, value] of headers) {
+    if (name.startsWith(META_PREFIX)) {
+      metadata[name.slice(META_PREFIX.length)] = value;
+    }
+  }
+
+  // Strict parse: Number() would let NaN, decimals, negatives, and
+  // empty strings through and we'd later ship Content-Length: NaN
+  // (or wrong byte counts). Anything malformed -> null -> proxy omits
+  // the header and falls back to chunked transfer.
+  const lenRaw = headers.get("content-length");
+  const lenParsed = lenRaw === null ? Number.NaN : Number(lenRaw);
+  const size = Number.isInteger(lenParsed) && lenParsed >= 0 ? lenParsed : null;
+
+  return {
+    contentType: headers.get("content-type") ?? "application/octet-stream",
+    cacheControl: headers.get("cache-control") ?? undefined,
+    size,
+    metadata,
+  };
+}
 
 /**
  * S3-compatible driver via aws4fetch SigV4. Metadata as x-amz-meta-* headers.
@@ -62,30 +91,28 @@ export class S3Driver implements StorageDriver {
       });
     }
 
-    const headers = response.headers;
-    const metadata: Record<string, string> = {};
-    for (const [name, value] of headers) {
-      if (name.startsWith(META_PREFIX)) {
-        metadata[name.slice(META_PREFIX.length)] = value;
-      }
+    return { ...parseHead(response.headers), body: response.body };
+  }
+
+  async head(key: string): Promise<StorageObjectHead | null> {
+    const response = await this.client.fetch(this.url(key), { method: "HEAD" });
+    // HEAD spec says no body, but undici still creates an empty stream
+    // that holds the socket until cancelled.
+    await response.body?.cancel();
+
+    if (response.status === 404) {
+      return null;
+    }
+    if (!response.ok) {
+      throw new StorageError({
+        driver: this.name,
+        op: "head",
+        key,
+        status: response.status,
+      });
     }
 
-    // Strict parse: Number() would let NaN, decimals, negatives, and
-    // empty strings through and we'd later ship Content-Length: NaN
-    // (or wrong byte counts). Anything malformed -> null -> proxy omits
-    // the header and falls back to chunked transfer.
-    const lenRaw = headers.get("content-length");
-    const lenParsed = lenRaw === null ? Number.NaN : Number(lenRaw);
-    const size =
-      Number.isInteger(lenParsed) && lenParsed >= 0 ? lenParsed : null;
-
-    return {
-      body: response.body,
-      contentType: headers.get("content-type") ?? "application/octet-stream",
-      cacheControl: headers.get("cache-control") ?? undefined,
-      size,
-      metadata,
-    };
+    return parseHead(response.headers);
   }
 
   async put<TMeta extends Record<string, string>>(
@@ -148,26 +175,7 @@ export class S3Driver implements StorageDriver {
   }
 
   async has(key: string): Promise<boolean> {
-    const response = await this.client.fetch(this.url(key), { method: "HEAD" });
-    // HEAD spec says no body, but undici still creates an empty stream
-    // that holds the socket until cancelled.
-    await response.body?.cancel();
-
-    if (response.status === 404) {
-      return false;
-    }
-
-    if (response.ok) {
-      return true;
-    }
-
-    // 403 / 5xx / auth failures must surface; silently returning false
-    // would mask outages (health probes would pass on broken S3).
-    throw new StorageError({
-      driver: this.name,
-      op: "has",
-      key,
-      status: response.status,
-    });
+    const object = await this.head(key);
+    return object !== null;
   }
 }

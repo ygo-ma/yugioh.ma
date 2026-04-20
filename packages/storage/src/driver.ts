@@ -1,17 +1,19 @@
 // Storage abstraction shared by every backend (R2, KV, S3, fs). The interface
-// is deliberately tiny: get/put/delete/has. Drivers stream bodies in and out;
-// metadata travels alongside as a flat string map plus dedicated content-type
-// and cache-control fields so each backend can store them natively.
+// is deliberately tiny: get/head/put/delete/has. Drivers stream bodies in and
+// out; metadata travels alongside as a flat string map plus dedicated
+// content-type and cache-control fields so each backend can store them
+// natively.
 
-export interface StorageObject {
-  body: ReadableStream<Uint8Array>;
+import type { ValidatedMetadata } from "./metadata-keys";
+
+export interface StorageObjectHead {
   contentType: string;
   /**
    * Stored HTTP cache-control. Absent when the put did not set it.
    */
   cacheControl: string | undefined;
   /**
-   * Byte length of `body`. Null when the backend doesn't expose it.
+   * Byte length of the stored object. Null when the backend doesn't expose it.
    */
   size: number | null;
   /**
@@ -21,6 +23,10 @@ export interface StorageObject {
    * write across every backend (see `validateMetadataKeys`).
    */
   metadata: Record<string, string>;
+}
+
+export interface StorageObject extends StorageObjectHead {
+  body: ReadableStream<Uint8Array>;
 }
 
 /**
@@ -33,76 +39,6 @@ export interface DriverOptions {
    */
   defaultCacheControl?: string;
 }
-
-// Enumerated character classes used by KebabKey. Defined as explicit
-// unions instead of relying on Lowercase<X>/Uppercase<X> tricks: those
-// misclassify non-letters (e.g. Uppercase<"-"> is "-", which would
-// false-positive every hyphen as uppercase).
-type LowerLetter =
-  | "a"
-  | "b"
-  | "c"
-  | "d"
-  | "e"
-  | "f"
-  | "g"
-  | "h"
-  | "i"
-  | "j"
-  | "k"
-  | "l"
-  | "m"
-  | "n"
-  | "o"
-  | "p"
-  | "q"
-  | "r"
-  | "s"
-  | "t"
-  | "u"
-  | "v"
-  | "w"
-  | "x"
-  | "y"
-  | "z";
-type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-
-/**
- * Compile-time check matching `/^[a-z0-9][a-z0-9-]*$/`.
- */
-type KebabKey<TKey extends string> =
-  TKey extends `${LowerLetter | Digit}${infer Rest}`
-    ? KebabBody<Rest> extends true
-      ? TKey
-      : never
-    : never;
-
-/**
- * Tail-recursive body check: each subsequent char in `[a-z0-9-]`.
- */
-type KebabBody<TKey extends string> = TKey extends ""
-  ? true
-  : TKey extends `${LowerLetter | Digit | "-"}${infer Rest}`
-    ? KebabBody<Rest>
-    : false;
-
-/**
- * Maps each metadata key through `KebabKey`. Invalid keys become a
- * branded error-string literal that breaks `string` assignment.
- *
- * Catches uppercase, leading hyphens, underscores, non-ASCII, and
- * empty keys when keys are literal in an object literal.
- *
- * Dynamic / spread keys widen to `Record<string, string>` and are
- * caught by `validateMetadataKeys` at runtime.
- */
-export type ValidatedMetadata<TMeta> = {
-  [TKey in keyof TMeta]: TKey extends string
-    ? TKey extends KebabKey<TKey>
-      ? TMeta[TKey]
-      : `ERROR: metadata key '${TKey}' must be lowercase kebab-case ([a-z0-9][a-z0-9-]*)`
-    : TMeta[TKey];
-};
 
 export interface StoragePutOptions<
   TMeta extends Record<string, string> = Record<string, string>,
@@ -132,6 +68,7 @@ export interface StoragePutOptions<
 export interface StorageDriver {
   readonly name: string;
   get(key: string): Promise<StorageObject | null>;
+  head(key: string): Promise<StorageObjectHead | null>;
   put<TMeta extends Record<string, string>>(
     key: string,
     body: ReadableStream<Uint8Array> | Uint8Array,
@@ -167,6 +104,7 @@ export function prefixDriver(
   return {
     name: inner.name,
     get: (key) => inner.get(prefixed(key)),
+    head: (key) => inner.head(prefixed(key)),
     async put<TMeta extends Record<string, string>>(
       key: string,
       body: ReadableStream<Uint8Array> | Uint8Array,
@@ -273,28 +211,4 @@ export function validatingStream(
   });
 
   return body.pipeThrough(transform);
-}
-
-export const METADATA_KEY_RE = /^[a-z0-9][a-z0-9-]*$/u;
-
-/**
- * Throws on any metadata key that wouldn't survive a round-trip through
- * S3's `x-amz-meta-*` headers (which case-fold).
- *
- * Enforced at write-site by every driver's `put()`, not discovered
- * later when `uploadedAt` comes back as `uploadedat`.
- */
-export function validateMetadataKeys(
-  metadata: Record<string, string>,
-): asserts metadata is Record<string, string> {
-  for (const key of Object.keys(metadata)) {
-    if (METADATA_KEY_RE.test(key)) {
-      continue;
-    }
-
-    const message =
-      `invalid metadata key: ${JSON.stringify(key)} must be` +
-      "lowercase letters, digits, hyphens; starting with letter or digit";
-    throw new Error(message);
-  }
 }

@@ -1,13 +1,17 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import {
   bufferBody,
-  validateMetadataKeys,
   validatingStream,
   type DriverOptions,
   type StorageDriver,
   type StorageObject,
+  type StorageObjectHead,
   type StoragePutOptions,
 } from "../driver";
+import { validateMetadataKeys } from "../metadata-keys";
+
+// Module-level flag so isolate restarts don't spam logs across requests.
+let warned = false;
 
 // 20 MiB cap (KV's hard ceiling is 25). Headroom for the worker heap,
 // and a signal that larger blobs belong on R2/S3; KV is the fallback.
@@ -31,7 +35,16 @@ export class KvDriver implements StorageDriver {
   constructor(
     private readonly binding: KVNamespace,
     private readonly options: DriverOptions = {},
-  ) {}
+  ) {
+    if (!warned) {
+      warned = true;
+
+      const message =
+        "[storage] KvDriver is a testing-only fallback. " +
+        "head() reads the full value and cancels; for production use R2 or S3.";
+      console.warn(message);
+    }
+  }
 
   async get(key: string): Promise<StorageObject | null> {
     const result = await this.binding.getWithMetadata<KvStoredMetadata>(
@@ -88,6 +101,26 @@ export class KvDriver implements StorageDriver {
 
     // Cast bridges global ReadableStream to workers-types' variant.
     await this.binding.put(key, value as Uint8Array, { metadata });
+  }
+
+  async head(key: string): Promise<StorageObjectHead | null> {
+    const result = await this.binding.getWithMetadata<KvStoredMetadata>(
+      key,
+      "stream",
+    );
+    if (!result.value) {
+      return null;
+    }
+
+    // KV has no head endpoint; cancel the body stream so KV releases
+    // the connection before we return.
+    await result.value.cancel();
+    if (!result.metadata) {
+      return null;
+    }
+
+    const { contentType, cacheControl, size, user } = result.metadata;
+    return { contentType, cacheControl, size, metadata: user };
   }
 
   async delete(key: string): Promise<void> {

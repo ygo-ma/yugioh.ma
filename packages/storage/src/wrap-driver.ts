@@ -1,4 +1,9 @@
-import type { StorageDriver, StorageObject, StoragePutOptions } from "./driver";
+import type {
+  StorageDriver,
+  StorageObject,
+  StorageObjectHead,
+  StoragePutOptions,
+} from "./driver";
 import { StorageError, type StorageOp } from "./error";
 
 /**
@@ -15,6 +20,10 @@ class ErrorWrappingDriver implements StorageDriver {
 
   async get(key: string): Promise<StorageObject | null> {
     return this.#wrap("get", key, () => this.inner.get(key));
+  }
+
+  async head(key: string): Promise<StorageObjectHead | null> {
+    return this.#wrap("head", key, () => this.inner.head(key));
   }
 
   async put<TMeta extends Record<string, string>>(

@@ -3,7 +3,8 @@
 
 import { HTTPException } from "hono/http-exception";
 import { v7 as uuidv7 } from "uuid";
-import type { StorageDriver, ValidatedMetadata } from "./driver";
+import type { StorageDriver } from "./driver";
+import type { ValidatedMetadata } from "./metadata-keys";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 

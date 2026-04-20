@@ -6,14 +6,14 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { z } from "zod";
 import {
-  METADATA_KEY_RE,
-  validateMetadataKeys,
   validatingStream,
   type DriverOptions,
   type StorageDriver,
   type StorageObject,
+  type StorageObjectHead,
   type StoragePutOptions,
 } from "../driver";
+import { METADATA_KEY_RE, validateMetadataKeys } from "../metadata-keys";
 
 const HEADER_LEN_BYTES = 4;
 // Sanity cap on header size so a corrupted/garbage prefix can't cause us to
@@ -234,6 +234,27 @@ export class FsDriver implements StorageDriver {
     } catch (err) {
       await rm(tmpPath, { force: true });
       throw err;
+    }
+  }
+
+  async head(key: string): Promise<StorageObjectHead | null> {
+    let fd;
+    try {
+      fd = await open(this.path(key), "r");
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+        return null;
+      }
+
+      throw err;
+    }
+
+    try {
+      const { header, size } = await readHeader(fd);
+      const { contentType, cacheControl, metadata } = header;
+      return { contentType, cacheControl, metadata, size };
+    } finally {
+      await fd.close();
     }
   }
 
