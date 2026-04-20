@@ -67,7 +67,7 @@ export async function storeFile<TMeta extends Record<string, string>>(
   }
 
   const resolvedKey = key ?? generateKey(file.name);
-  await storage.put(resolvedKey, file.stream() as ReadableStream<Uint8Array>, {
+  await storage.put(resolvedKey, file.stream(), {
     contentType: file.type || "application/octet-stream",
     sizeHint: file.size,
     metadata: {
