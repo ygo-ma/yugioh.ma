@@ -108,13 +108,7 @@ export class S3Driver implements StorageDriver {
       headers["Cache-Control"] = cacheControl;
     }
 
-    // Cast: ValidatedMetadata<TMeta> is a mapped type whose value
-    // becomes `unknown` under Object.entries; values are guaranteed
-    // strings at runtime by both the type constraint and the runtime
-    // validator above.
-    for (const [name, value] of Object.entries(
-      metadata as Record<string, string>,
-    )) {
+    for (const [name, value] of Object.entries(metadata)) {
       headers[`${META_PREFIX}${name}`] = value;
     }
 

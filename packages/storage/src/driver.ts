@@ -284,14 +284,17 @@ export const METADATA_KEY_RE = /^[a-z0-9][a-z0-9-]*$/u;
  * Enforced at write-site by every driver's `put()`, not discovered
  * later when `uploadedAt` comes back as `uploadedat`.
  */
-export function validateMetadataKeys(metadata: Record<string, string>): void {
+export function validateMetadataKeys(
+  metadata: Record<string, string>,
+): asserts metadata is Record<string, string> {
   for (const key of Object.keys(metadata)) {
-    if (!METADATA_KEY_RE.test(key)) {
-      throw new Error(
-        `invalid metadata key: ${JSON.stringify(key)} ` +
-          "(must match /^[a-z0-9][a-z0-9-]*$/; lowercase letters, " +
-          "digits, hyphens; starting with letter or digit)",
-      );
+    if (METADATA_KEY_RE.test(key)) {
+      continue;
     }
+
+    const message =
+      `invalid metadata key: ${JSON.stringify(key)} must be` +
+      "lowercase letters, digits, hyphens; starting with letter or digit";
+    throw new Error(message);
   }
 }
