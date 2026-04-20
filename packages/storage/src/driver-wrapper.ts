@@ -18,7 +18,8 @@ const TRAVERSAL_SEGMENT_RE = /(?:^|\/)\.{1,2}(?:$|\/)/u;
 
 /**
  * Wraps a `StorageDriver` with cross-cutting concerns at the call boundary:
- * key length validation and uniform `StorageError` rewrapping.
+ * write-side key validation (length, traversal segments) and uniform
+ * `StorageError` rewrapping.
  *
  * Reads `name` from the wrapped driver. Inner `StorageError` throws pass
  * through unchanged to avoid double-wrapping.
@@ -43,6 +44,21 @@ export class DriverWrapper implements StorageDriver {
     body: ReadableStream<Uint8Array> | Uint8Array,
     options: StoragePutOptions<TMeta>,
   ): Promise<void> {
+    const byteLength = encoder.encode(key).byteLength;
+    if (byteLength > KEY_MAX_BYTES) {
+      const message =
+        `${this.name} put: ` +
+        `key is ${byteLength} bytes, exceeds ${KEY_MAX_BYTES}`;
+      throw new StorageError({ driver: this.name, op: "put", key }, message);
+    }
+
+    if (TRAVERSAL_SEGMENT_RE.test(key)) {
+      const message =
+        `${this.name} put: ` +
+        `key contains "." or ".." segment: ${JSON.stringify(key)}`;
+      throw new StorageError({ driver: this.name, op: "put", key }, message);
+    }
+
     return this.#wrap("put", key, () => this.inner.put(key, body, options));
   }
 
@@ -59,21 +75,6 @@ export class DriverWrapper implements StorageDriver {
     key: string,
     fn: () => Promise<TResult>,
   ): Promise<TResult> {
-    const byteLength = encoder.encode(key).byteLength;
-    if (byteLength > KEY_MAX_BYTES) {
-      const message =
-        `${this.name} ${op}: ` +
-        `key is ${byteLength} bytes, exceeds ${KEY_MAX_BYTES}`;
-      throw new StorageError({ driver: this.name, op, key }, message);
-    }
-
-    if (TRAVERSAL_SEGMENT_RE.test(key)) {
-      const message =
-        `${this.name} ${op}: ` +
-        `key contains "." or ".." segment: ${JSON.stringify(key)}`;
-      throw new StorageError({ driver: this.name, op, key }, message);
-    }
-
     try {
       return await fn();
     } catch (cause) {
