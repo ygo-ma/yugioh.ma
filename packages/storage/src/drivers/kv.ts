@@ -99,13 +99,7 @@ export class KvDriver implements StorageDriver {
   }
 
   async has(key: string): Promise<boolean> {
-    // KV has no head endpoint; fetch as stream and cancel before draining.
-    const stream = await this.binding.get(key, "stream");
-    if (!stream) {
-      return false;
-    }
-
-    await stream.cancel();
-    return true;
+    const result = await this.binding.list({ prefix: key, limit: 1 });
+    return result.keys[0]?.name === key;
   }
 }
