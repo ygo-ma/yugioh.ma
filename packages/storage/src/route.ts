@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import type { MiddlewareHandler } from "hono/types";
 import { HTTPException } from "hono/http-exception";
 import {
@@ -40,7 +40,8 @@ function isProxyDisabled<TEnv>(
   return false;
 }
 
-interface MediaEnv {
+interface MediaEnv<TEnv extends object> {
+  Bindings: TEnv;
   Variables: { storage: Record<string, StorageDriver> };
 }
 
@@ -74,31 +75,20 @@ async function authorizePrivate(
   await verify(bucket, key, expires, token, signingKey);
 }
 
-interface MediaContext {
-  env: unknown;
-  req: {
-    param(name: string): string;
-    query(name: string): string | undefined;
-  };
-  var: { storage: Record<string, StorageDriver> };
-}
-
-function buildGetHandler<TEnv>(
+function buildGetHandler<TEnv extends object>(
   bucket: string,
   config: BucketConfig<TEnv>,
   verify: VerifyFn,
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ) {
-  return async (context: MediaContext) => {
-    const env = context.env as TEnv;
-
+  return async ({ env, req, var: vars }: Context<MediaEnv<TEnv>>) => {
     if (isProxyDisabled(config, env, signingKey, s3)) {
       const message = "use direct or presigned URLs for this bucket";
       throw new HTTPException(404, { message });
     }
 
-    const key = context.req.param("key");
+    const key = req.param("key");
     if (!key) {
       throw new HTTPException(400, { message: "missing key" });
     }
@@ -108,13 +98,13 @@ function buildGetHandler<TEnv>(
         bucket,
         key,
         signingKey(env),
-        context.req.query("expires"),
-        context.req.query("token"),
+        req.query("expires"),
+        req.query("token"),
         verify,
       );
     }
 
-    const storage = context.var.storage[bucket];
+    const storage = vars.storage[bucket];
     if (!storage) {
       throw new HTTPException(500, { message: "bucket not resolved" });
     }
@@ -128,14 +118,14 @@ function buildGetHandler<TEnv>(
   };
 }
 
-export function createMediaRoute<TEnv>(
+export function createMediaRoute<TEnv extends object>(
   bucketConfig: BucketMap<TEnv>,
   middleware: MiddlewareHandler,
   verify: VerifyFn,
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ) {
-  const route = new Hono<MediaEnv>().use(middleware);
+  const route = new Hono<MediaEnv<TEnv>>().use(middleware);
 
   for (const [bucket, config] of Object.entries(bucketConfig)) {
     const handler = buildGetHandler(bucket, config, verify, signingKey, s3);
