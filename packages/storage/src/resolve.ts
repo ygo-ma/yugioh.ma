@@ -9,7 +9,7 @@ import {
 import { KvDriver } from "./drivers/kv";
 import { R2Driver } from "./drivers/r2";
 import { S3Driver } from "./drivers/s3";
-import { withStorageErrors } from "./wrap-driver";
+import { DriverWrapper } from "./driver-wrapper";
 import type {
   BucketConfig,
   BucketMap,
@@ -132,7 +132,7 @@ async function resolveBucket<TEnv>(
 
   // Wrap last so emitted StorageError.key is the user-supplied key,
   // not the backend-prefixed one.
-  return withStorageErrors(prefixed);
+  return new DriverWrapper(prefixed);
 }
 
 export function createResolveStorage<TEnv, TBucket extends string>(

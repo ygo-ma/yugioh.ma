@@ -6,12 +6,18 @@ import type {
 } from "./driver";
 import { StorageError, type StorageOp } from "./error";
 
+// Hard cap on storage keys. Matches S3's spec'd 1024-char object-key
+// limit; tightest bound that holds across R2 and S3.
+const KEY_MAX_LENGTH = 1024;
+
 /**
- * Decorator that wraps any `StorageDriver` so backend failures surface as
- * `StorageError` with structured fields. Reads `name` from the wrapped
- * driver. Inner `StorageError` throws pass through to avoid double-wrapping.
+ * Wraps a `StorageDriver` with cross-cutting concerns at the call boundary:
+ * key length validation and uniform `StorageError` rewrapping.
+ *
+ * Reads `name` from the wrapped driver. Inner `StorageError` throws pass
+ * through unchanged to avoid double-wrapping.
  */
-class ErrorWrappingDriver implements StorageDriver {
+export class DriverWrapper implements StorageDriver {
   readonly name: string;
 
   constructor(private readonly inner: StorageDriver) {
@@ -47,6 +53,13 @@ class ErrorWrappingDriver implements StorageDriver {
     key: string,
     fn: () => Promise<TResult>,
   ): Promise<TResult> {
+    if (key.length > KEY_MAX_LENGTH) {
+      const message =
+        `${this.name} ${op}: ` +
+        `key length ${key.length} exceeds ${KEY_MAX_LENGTH}`;
+      throw new StorageError({ driver: this.name, op, key }, message);
+    }
+
     try {
       return await fn();
     } catch (cause) {
@@ -57,8 +70,4 @@ class ErrorWrappingDriver implements StorageDriver {
       throw new StorageError({ driver: this.name, op, key, cause });
     }
   }
-}
-
-export function withStorageErrors(inner: StorageDriver): StorageDriver {
-  return new ErrorWrappingDriver(inner);
 }
