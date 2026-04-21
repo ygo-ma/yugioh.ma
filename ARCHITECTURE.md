@@ -138,7 +138,7 @@ multiple driver backends. Buckets are declared inline in the app's
 ```ts
 createStorageKit({
   signingKey: (env) => env.STORAGE_SIGNING_KEY,
-  kvBindingName: (env) => env.KV_STORAGE,
+  kvBindingName: (env) => env.STORAGE_KV_FALLBACK,
   s3: (env) => /* { endpoint, accessKeyId, secretAccessKey, region } | undefined */,
   buckets: {
     public: {
@@ -165,7 +165,7 @@ order — the first one configured wins:
 
 1. **R2 binding** — Cloudflare Workers only, requires billing
 2. **KV fallback** — Cloudflare Workers only, free tier via
-   `KV_STORAGE=<binding-name>` (e.g. `CACHE`)
+   `STORAGE_KV_FALLBACK=<binding-name>` (e.g. `CACHE`)
 3. **S3** — any runtime, when `S3_ENDPOINT` is set
 4. **Filesystem** — Node.js only, local dev default
 
@@ -405,10 +405,10 @@ Set in **Settings → Secrets and variables → Actions**.
 All deployment, Sentry, and storage steps are skipped when their
 secrets/variables are absent. The minimum viable deployment needs
 only `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` — the CI
-workflow sets `KV_STORAGE=CACHE` on preview branches automatically,
-so storage works out of the box for PRs. Staging and production
-need explicit storage configuration (R2 bindings, S3, or manual
-`KV_STORAGE`).
+workflow sets `STORAGE_KV_FALLBACK=CACHE` on preview branches
+automatically, so storage works out of the box for PRs. Staging and
+production need explicit storage configuration (R2 bindings, S3, or
+manual `STORAGE_KV_FALLBACK`).
 
 ## Conventions
 

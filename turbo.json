@@ -5,7 +5,6 @@
     "DATABASE_URL",
     "CACHE_URL",
     "BASIC_AUTH_CREDENTIALS",
-    "KV_STORAGE",
     "STORAGE_*",
     "S3_*",
     "SENTRY_*"
