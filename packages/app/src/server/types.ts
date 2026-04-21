@@ -32,7 +32,7 @@ export interface EnvVars extends SentryBindings {
   S3_BUCKET_PRIVATE?: string;
 
   // ── Storage: KV fallback binding name ──
-  KV_STORAGE?: string;
+  STORAGE_KV_FALLBACK?: string;
 }
 
 export interface CfBindings

@@ -12,7 +12,7 @@ export const {
   urlFor,
 } = createStorageKit({
   signingKey: (env: CfBindings) => env.STORAGE_SIGNING_KEY,
-  kvBindingName: (env) => env.KV_STORAGE,
+  kvBindingName: (env) => env.STORAGE_KV_FALLBACK,
   s3: (env) => {
     if (!env.S3_ENDPOINT) {
       return;

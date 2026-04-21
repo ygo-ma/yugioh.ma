@@ -1,6 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["packages/tsconfig/tsconfig.*.json"],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "CACHE_URL",
+    "BASIC_AUTH_CREDENTIALS",
+    "STORAGE_*",
+    "S3_*",
+    "SENTRY_*"
+  ],
   "tasks": {
     "dev": {
       "cache": false,
