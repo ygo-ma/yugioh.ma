@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  STORAGE_SIGNING_KEY: ci-dummy-key
+
 jobs:
   docker-run:
     name: Works with docker run
@@ -18,7 +21,7 @@ jobs:
         run: docker build -t acme .
 
       - name: Start container
-        run: docker run -d --name acme -p 3000:3000 acme
+        run: docker run -d --name acme -e STORAGE_SIGNING_KEY -p 3000:3000 acme
 
       - name: Health check
         run: curl -fsSL --retry 10 --retry-max-time 60 --retry-all-errors -A "acme-ci-health-probe" http://localhost:3000/health
@@ -30,8 +33,6 @@ jobs:
   docker-compose:
     name: Works with docker compose
     runs-on: ubuntu-latest
-    env:
-      STORAGE_SIGNING_KEY: ci-dummy-key
     steps:
       - name: Checkout
         uses: actions/checkout@v6

@@ -5,15 +5,16 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./helpers": "./src/helpers.ts"
+    "./helpers": "./src/helpers.ts",
+    "./drivers/fs": "./src/drivers/fs.ts"
   },
   "scripts": {
     "lint": "oxfmt -c ../../.oxfmtrc.json --check . && oxlint -c ../../.oxlintrc.json && tsc -b"
   },
   "dependencies": {
     "aws4fetch": "catalog:",
-    "unstorage": "catalog:",
-    "uuid": "catalog:"
+    "uuid": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@acme/tsconfig": "workspace:*",
@@ -27,6 +28,6 @@
     "hono": "catalog:"
   },
   "cloudflareExternals": [
-    "unstorage/drivers/fs"
+    "@acme/storage/drivers/fs"
   ]
 }

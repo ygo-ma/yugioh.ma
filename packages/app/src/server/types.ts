@@ -1,7 +1,7 @@
 import type { SentryBindings } from "@acme/sentry/server";
 import type { Cache, CacheBindings } from "@acme/cache";
 import type { DbBindings } from "@acme/db";
-import type { Storage, StorageBindings } from "@acme/storage";
+import type { StorageBindings, StorageDriver } from "@acme/storage";
 import type { Database } from "./db";
 import type { BucketName } from "./storage";
 
@@ -43,7 +43,7 @@ export interface AppEnv {
   Variables: {
     db: Database;
     cache: Cache;
-    storage: Record<BucketName, Storage>;
+    storage: Record<BucketName, StorageDriver>;
   };
 }
 

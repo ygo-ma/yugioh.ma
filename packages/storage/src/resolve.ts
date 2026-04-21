@@ -1,21 +1,32 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
 import { getRuntimeKey } from "hono/adapter";
-import { createStorage, prefixStorage } from "unstorage";
+import {
+  cacheControlFor,
+  prefixDriver,
+  type DriverOptions,
+  type StorageDriver,
+} from "./driver";
+import { KvDriver } from "./drivers/kv";
+import { R2Driver } from "./drivers/r2";
+import { S3Driver } from "./drivers/s3";
+import { DriverWrapper } from "./driver-wrapper";
 import type {
   BucketConfig,
   BucketMap,
-  S3Credentials,
   KvBindingNameFn,
+  S3Credentials,
   S3Fn,
-  Storage,
   UserEnv,
 } from "./types";
 
-/** R2 binding — Cloudflare Workers only, requires billing. */
-async function tryR2<TEnv>(
+/**
+ * R2 binding. Cloudflare Workers only, requires billing.
+ */
+function tryR2<TEnv>(
   config: BucketConfig<TEnv>,
   env: TEnv,
-): Promise<Storage | undefined> {
+  driverOptions: DriverOptions,
+): StorageDriver | undefined {
   if (getRuntimeKey() !== "workerd") {
     return undefined;
   }
@@ -25,18 +36,18 @@ async function tryR2<TEnv>(
     return undefined;
   }
 
-  const { default: r2Driver } =
-    await import("unstorage/drivers/cloudflare-r2-binding");
-  const driver = r2Driver({ binding });
-  return createStorage({ driver });
+  return new R2Driver(binding, driverOptions);
 }
 
-/** KV fallback — Cloudflare Workers only, free tier. */
-async function tryKV(
+/**
+ * KV fallback. Cloudflare Workers only, free tier.
+ */
+function tryKV(
   bucket: string,
   kvBindingName: string | undefined,
   env: UserEnv,
-): Promise<Storage | undefined> {
+  driverOptions: DriverOptions,
+): StorageDriver | undefined {
   if (getRuntimeKey() !== "workerd" || !kvBindingName) {
     return undefined;
   }
@@ -50,47 +61,47 @@ async function tryKV(
     );
   }
 
-  const { default: kvDriver } =
-    await import("unstorage/drivers/cloudflare-kv-binding");
-  const driver = kvDriver({
-    binding: kvBinding,
-    base: `storage:${bucket}`,
-  });
-  return createStorage({ driver });
+  // KvDriver is bucket-agnostic; namespace per-bucket so multiple buckets
+  // can share a single KV namespace without colliding.
+  return prefixDriver(
+    new KvDriver(kvBinding, driverOptions),
+    `storage:${bucket}`,
+  );
 }
 
-/** S3-compatible storage — any runtime. */
-async function tryS3<TEnv>(
+/**
+ * S3-compatible storage. Works in any runtime.
+ */
+function tryS3<TEnv>(
   config: BucketConfig<TEnv>,
   env: TEnv,
   creds: S3Credentials | undefined,
-): Promise<Storage | undefined> {
+  driverOptions: DriverOptions,
+): StorageDriver | undefined {
   if (!creds) {
     return undefined;
   }
 
-  const { default: s3Driver } = await import("unstorage/drivers/s3");
-  const driver = s3Driver({
-    accessKeyId: creds.accessKeyId,
-    secretAccessKey: creds.secretAccessKey,
-    endpoint: creds.endpoint,
-    region: creds.region ?? "auto",
-    bucket: config.s3BucketName(env),
-  });
-  return createStorage({ driver });
+  return new S3Driver(creds, config.s3BucketName(env), driverOptions);
 }
 
-/** Local filesystem — Node.js only. */
-async function tryFS(bucket: string): Promise<Storage | undefined> {
+/**
+ * Local filesystem driver. Node.js only.
+ *
+ * Dynamic import keeps `node:fs` out of the Cloudflare bundle (paired
+ * with `cloudflareExternals` in package.json).
+ */
+async function tryFS(
+  bucket: string,
+  driverOptions: DriverOptions,
+): Promise<StorageDriver | undefined> {
   if (getRuntimeKey() === "workerd") {
     return undefined;
   }
 
-  const { default: fsDriver } = await import("unstorage/drivers/fs");
-  const driver = fsDriver({
-    base: `${process.env.STORAGE_DIR ?? "./data/storage"}/${bucket}`,
-  });
-  return createStorage({ driver });
+  const { FsDriver } = await import("@acme/storage/drivers/fs");
+  const root = process.env.STORAGE_DIR ?? "./data/storage";
+  return new FsDriver(`${root}/${bucket}`, driverOptions);
 }
 
 async function resolveBucket<TEnv>(
@@ -99,21 +110,29 @@ async function resolveBucket<TEnv>(
   env: TEnv,
   s3Creds: S3Credentials | undefined,
   kvBindingName: string | undefined,
-): Promise<Storage> {
-  const storage =
-    (await tryR2(config, env)) ??
-    (await tryKV(bucket, kvBindingName, env)) ??
-    (await tryS3(config, env, s3Creds)) ??
-    (await tryFS(bucket));
+): Promise<StorageDriver> {
+  const driverOptions: DriverOptions = {
+    defaultCacheControl: cacheControlFor(config.public),
+  };
 
-  if (!storage) {
+  const driver =
+    tryR2(config, env, driverOptions) ??
+    tryKV(bucket, kvBindingName, env, driverOptions) ??
+    tryS3(config, env, s3Creds, driverOptions) ??
+    (await tryFS(bucket, driverOptions));
+
+  if (!driver) {
     throw new Error(
       "No storage backend: configure an R2 binding, provide S3 credentials via s3(), or a KV binding name via kvBindingName()",
     );
   }
 
   const keyPrefix = config.keyPrefix(env);
-  return keyPrefix ? prefixStorage(storage, keyPrefix) : storage;
+  const prefixed = keyPrefix ? prefixDriver(driver, keyPrefix) : driver;
+
+  // Wrap last so emitted StorageError.key is the user-supplied key,
+  // not the backend-prefixed one.
+  return new DriverWrapper(prefixed);
 }
 
 export function createResolveStorage<TEnv, TBucket extends string>(
@@ -121,24 +140,26 @@ export function createResolveStorage<TEnv, TBucket extends string>(
   s3: S3Fn<TEnv>,
   kvBindingName: KvBindingNameFn<TEnv>,
 ) {
-  async function resolveStorage(env: TEnv): Promise<Record<TBucket, Storage>> {
+  async function resolveStorage(
+    env: TEnv,
+  ): Promise<Record<TBucket, StorageDriver>> {
     const s3Creds = s3(env);
     const kvName = kvBindingName(env);
     const entries = await Promise.all(
       Object.entries<BucketConfig<TEnv>>(bucketConfig).map(
         async ([name, config]) => {
-          const storage = await resolveBucket(
+          const driver = await resolveBucket(
             config,
             name,
             env,
             s3Creds,
             kvName,
           );
-          return [name, storage] as const;
+          return [name, driver] as const;
         },
       ),
     );
-    return Object.fromEntries(entries) as Record<TBucket, Storage>;
+    return Object.fromEntries(entries) as Record<TBucket, StorageDriver>;
   }
 
   return resolveStorage;

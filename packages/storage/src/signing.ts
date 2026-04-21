@@ -1,5 +1,7 @@
+import { AwsClient } from "aws4fetch";
 import { HTTPException } from "hono/http-exception";
 import type { BucketMap, S3Credentials, S3Fn, SigningKeyFn } from "./types";
+import { encodeKeyPath } from "./url";
 
 async function hmacSign(data: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -34,7 +36,9 @@ function timingSafeEqual(expected: string, actual: string): boolean {
   return diff === 0;
 }
 
-/** Generates an S3-compatible presigned GET URL using AWS SigV4. Returns null if S3 creds are missing. */
+/**
+ * Generates an S3-compatible presigned GET URL using AWS SigV4. Returns null if S3 creds are missing.
+ */
 async function s3Presign(
   s3BucketName: string,
   creds: S3Credentials | undefined,
@@ -45,8 +49,7 @@ async function s3Presign(
     return null;
   }
 
-  const { AwsClient } = await import("aws4fetch");
-  const url = new URL(`/${s3BucketName}/${key}`, creds.endpoint);
+  const url = new URL(`/${s3BucketName}/${encodeKeyPath(key)}`, creds.endpoint);
   url.searchParams.set("X-Amz-Expires", String(ttlSeconds));
 
   const client = new AwsClient({
@@ -109,21 +112,25 @@ export function createPresignUrl<TEnv, TBucket extends string>(
   ): Promise<string> {
     const resolved = url.storageKey(bucket, env, key);
 
-    const directUrl = bucketConfig[bucket].baseUrl(env);
+    const cfg = bucketConfig[bucket];
+    const directUrl = cfg.public ? cfg.baseUrl(env) : null;
     if (directUrl) {
-      return `${directUrl.replace(/\/$/u, "")}/${resolved}`;
+      return `${directUrl.replace(/\/$/u, "")}/${encodeKeyPath(resolved)}`;
     }
 
     const sigKey = signingKey(env);
     if (sigKey) {
       const expires = Math.floor(Date.now() / 1000) + ttlSeconds;
+      // Token signs the raw key; the verifier reads c.req.param("key")
+      // which Hono URL-decodes, so HMAC inputs match end-to-end.
       const token = await hmacSign(`${bucket}:${key}:${expires}`, sigKey);
-      return `/media/${bucket}/${key}?expires=${expires}&token=${token}`;
+      const path = encodeKeyPath(key);
+      return `/media/${bucket}/${path}?expires=${expires}&token=${token}`;
     }
 
     const s3Creds = s3(env);
     const s3Url = await s3Presign(
-      bucketConfig[bucket].s3BucketName(env),
+      cfg.s3BucketName(env),
       s3Creds,
       resolved,
       ttlSeconds,
@@ -132,7 +139,7 @@ export function createPresignUrl<TEnv, TBucket extends string>(
       return s3Url;
     }
 
-    if (bucketConfig[bucket].public) {
+    if (cfg.public) {
       return url.urlFor(bucket, env, key);
     }
 

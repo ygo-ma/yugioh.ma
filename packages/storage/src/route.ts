@@ -1,13 +1,12 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import type { MiddlewareHandler } from "hono/types";
 import { HTTPException } from "hono/http-exception";
-import type {
-  BucketConfig,
-  BucketMap,
-  S3Fn,
-  SigningKeyFn,
-  Storage,
-} from "./types";
+import {
+  cacheControlFor,
+  type StorageDriver,
+  type StorageObject,
+} from "./driver";
+import type { BucketConfig, BucketMap, S3Fn, SigningKeyFn } from "./types";
 
 type VerifyFn = (
   bucket: string,
@@ -17,14 +16,16 @@ type VerifyFn = (
   signingKey: string,
 ) => Promise<void>;
 
-/** True when the proxy must refuse to serve because a better access path exists. */
+/**
+ * True when the proxy must refuse to serve because a better access path exists.
+ */
 function isProxyDisabled<TEnv>(
   config: BucketConfig<TEnv>,
   env: TEnv,
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ): boolean {
-  if (config.baseUrl(env)) {
+  if (config.public && config.baseUrl(env)) {
     return true;
   }
 
@@ -39,31 +40,23 @@ function isProxyDisabled<TEnv>(
   return false;
 }
 
-interface MediaEnv {
-  Variables: { storage: Record<string, Storage> };
+interface MediaEnv<TEnv extends object> {
+  Bindings: TEnv;
+  Variables: { storage: Record<string, StorageDriver> };
 }
 
-function serveFile(
-  data: Uint8Array,
-  meta: Record<string, unknown>,
-  isPublic: boolean,
-): Response {
+function serveFile(object: StorageObject, isPublic: boolean): Response {
   const headers = new Headers({
-    "Content-Length": String(data.byteLength),
-    "Content-Type":
-      typeof meta.contentType === "string"
-        ? meta.contentType
-        : "application/octet-stream",
+    "Content-Type": object.contentType,
+    "Cache-Control": object.cacheControl ?? cacheControlFor(isPublic),
     "X-Content-Type-Options": "nosniff",
   });
 
-  if (isPublic) {
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-  } else {
-    headers.set("Cache-Control", "private, no-store");
+  if (object.size !== null) {
+    headers.set("Content-Length", String(object.size));
   }
 
-  return new Response(data, { status: 200, headers });
+  return new Response(object.body, { status: 200, headers });
 }
 
 async function authorizePrivate(
@@ -82,36 +75,22 @@ async function authorizePrivate(
   await verify(bucket, key, expires, token, signingKey);
 }
 
-interface MediaContext {
-  env: unknown;
-  req: {
-    param(name: string): string;
-    query(name: string): string | undefined;
-  };
-  var: { storage: Record<string, Storage> };
-}
-
-function buildGetHandler<TEnv>(
+function buildGetHandler<TEnv extends object>(
   bucket: string,
   config: BucketConfig<TEnv>,
   verify: VerifyFn,
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ) {
-  return async (context: MediaContext) => {
-    const env = context.env as TEnv;
-
+  return async ({ env, req, var: vars }: Context<MediaEnv<TEnv>>) => {
     if (isProxyDisabled(config, env, signingKey, s3)) {
       const message = "use direct or presigned URLs for this bucket";
       throw new HTTPException(404, { message });
     }
 
-    const key = context.req.param("key");
+    const key = req.param("key");
     if (!key) {
       throw new HTTPException(400, { message: "missing key" });
-    }
-    if (key.endsWith("$")) {
-      throw new HTTPException(404, { message: "file not found" });
     }
 
     if (!config.public) {
@@ -119,34 +98,34 @@ function buildGetHandler<TEnv>(
         bucket,
         key,
         signingKey(env),
-        context.req.query("expires"),
-        context.req.query("token"),
+        req.query("expires"),
+        req.query("token"),
         verify,
       );
     }
 
-    const storage = context.var.storage[bucket];
+    const storage = vars.storage[bucket];
     if (!storage) {
       throw new HTTPException(500, { message: "bucket not resolved" });
     }
 
-    const data = await storage.getItemRaw<Uint8Array>(key);
-    if (!data) {
+    const object = await storage.get(key);
+    if (!object) {
       throw new HTTPException(404, { message: "file not found" });
     }
 
-    return serveFile(data, await storage.getMeta(key), config.public);
+    return serveFile(object, config.public);
   };
 }
 
-export function createMediaRoute<TEnv>(
+export function createMediaRoute<TEnv extends object>(
   bucketConfig: BucketMap<TEnv>,
   middleware: MiddlewareHandler,
   verify: VerifyFn,
   signingKey: SigningKeyFn<TEnv>,
   s3: S3Fn<TEnv>,
 ) {
-  const route = new Hono<MediaEnv>().use(middleware);
+  const route = new Hono<MediaEnv<TEnv>>().use(middleware);
 
   for (const [bucket, config] of Object.entries(bucketConfig)) {
     const handler = buildGetHandler(bucket, config, verify, signingKey, s3);
