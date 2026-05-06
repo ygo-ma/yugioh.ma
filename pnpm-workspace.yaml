@@ -43,7 +43,7 @@ catalog:
   iovalkey: "0.3.3"
   nitro: "3.0.260311-beta"
   oxfmt: "0.47.0"
-  oxlint: "1.60.0"
+  oxlint: "1.62.0"
   oxlint-tsgolint: "0.22.1"
   playwright: "1.59.1"
   react: "19.2.5"
