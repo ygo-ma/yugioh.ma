@@ -13,7 +13,7 @@ onlyBuiltDependencies:
 
 catalog:
   aws4fetch: "1.0.20"
-  "@cloudflare/workers-types": "4.20260503.1"
+  "@cloudflare/workers-types": "4.20260504.1"
   "@libsql/client": "0.17.3"
   "@sentry/cloudflare": "10.51.0"
   "@sentry/core": "10.51.0"
